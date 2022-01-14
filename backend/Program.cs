@@ -9,7 +9,6 @@ using dotnet_rpg.Services.UserContext;
 using dotnet_rpg.Services.WeaponService;
 using dotnet_rpg.Services.FightService;
 using dotnet_rpg.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -22,7 +21,6 @@ var configuration = builder.Configuration;
 services.AddDbContext<DataContext>(options =>
     {
         options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
-        options.UseOpenIddict();
     });
 
 builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true)

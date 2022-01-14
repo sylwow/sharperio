@@ -7,7 +7,6 @@ using dotnet_rpg.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Abstractions;
 
 namespace dotnet_rpg.Controllers
 {
@@ -19,19 +18,16 @@ namespace dotnet_rpg.Controllers
         private UserManager<AppUser> _userManager;
         private SignInManager<AppUser> _signInManager;
         private readonly IConfiguration _configuration;
-        private readonly IOpenIddictApplicationManager _applicationManager;
 
         public AuthController(
             IAuthRepository repo,
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
-            IConfiguration configuration,
-            IOpenIddictApplicationManager applicationManager)
+            IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
-            _applicationManager = applicationManager;
             _repo = repo;
         }
 
