@@ -1,8 +1,8 @@
-using dotnet_rpg.Models;
-using dotnet_rpg.Models.Dto.Character;
-using dotnet_rpg.Models.Dto.Weapon;
+using Sharperio.Models;
+using Sharperio.Models.Dto.Character;
+using Sharperio.Models.Dto.Weapon;
 
-namespace dotnet_rpg.Services.WeaponService
+namespace Sharperio.Services.WeaponService
 {
     public interface IWeaponService
     {

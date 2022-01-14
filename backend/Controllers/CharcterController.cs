@@ -1,12 +1,12 @@
 using System.Security.Claims;
-using dotnet_rpg.Models;
-using dotnet_rpg.Models.Dto.Character;
-using dotnet_rpg.Models.Dto.Skill;
-using dotnet_rpg.Services.CharacterService;
+using Sharperio.Models;
+using Sharperio.Models.Dto.Character;
+using Sharperio.Models.Dto.Skill;
+using Sharperio.Services.CharacterService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace dotnet_rpg.Controllers
+namespace Sharperio.Controllers
 {
     [Authorize]
     [ApiController]

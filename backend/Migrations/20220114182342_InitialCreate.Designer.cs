@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using dotnet_rpg.Data;
+using Sharperio.Data;
 
 #nullable disable
 
@@ -39,7 +39,7 @@ namespace sharperio.Migrations
                     b.ToTable("CharacterSkill");
                 });
 
-            modelBuilder.Entity("dotnet_rpg.Models.AppUser", b =>
+            modelBuilder.Entity("Sharperio.Models.AppUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -103,7 +103,7 @@ namespace sharperio.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("dotnet_rpg.Models.Character", b =>
+            modelBuilder.Entity("Sharperio.Models.Character", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -149,7 +149,7 @@ namespace sharperio.Migrations
                     b.ToTable("Characters");
                 });
 
-            modelBuilder.Entity("dotnet_rpg.Models.Skill", b =>
+            modelBuilder.Entity("Sharperio.Models.Skill", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -189,7 +189,7 @@ namespace sharperio.Migrations
                         });
                 });
 
-            modelBuilder.Entity("dotnet_rpg.Models.Weapon", b =>
+            modelBuilder.Entity("Sharperio.Models.Weapon", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -357,7 +357,7 @@ namespace sharperio.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("dotnet_rpg.Models.AppRole", b =>
+            modelBuilder.Entity("Sharperio.Models.AppRole", b =>
                 {
                     b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityRole");
 
@@ -382,33 +382,33 @@ namespace sharperio.Migrations
 
             modelBuilder.Entity("CharacterSkill", b =>
                 {
-                    b.HasOne("dotnet_rpg.Models.Character", null)
+                    b.HasOne("Sharperio.Models.Character", null)
                         .WithMany()
                         .HasForeignKey("CharactersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("dotnet_rpg.Models.Skill", null)
+                    b.HasOne("Sharperio.Models.Skill", null)
                         .WithMany()
                         .HasForeignKey("SkillsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("dotnet_rpg.Models.Character", b =>
+            modelBuilder.Entity("Sharperio.Models.Character", b =>
                 {
-                    b.HasOne("dotnet_rpg.Models.AppUser", "User")
+                    b.HasOne("Sharperio.Models.AppUser", "User")
                         .WithMany("Characters")
                         .HasForeignKey("UserID");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("dotnet_rpg.Models.Weapon", b =>
+            modelBuilder.Entity("Sharperio.Models.Weapon", b =>
                 {
-                    b.HasOne("dotnet_rpg.Models.Character", "Character")
+                    b.HasOne("Sharperio.Models.Character", "Character")
                         .WithOne("Weapon")
-                        .HasForeignKey("dotnet_rpg.Models.Weapon", "CharacterId")
+                        .HasForeignKey("Sharperio.Models.Weapon", "CharacterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -426,7 +426,7 @@ namespace sharperio.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("dotnet_rpg.Models.AppUser", null)
+                    b.HasOne("Sharperio.Models.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -435,7 +435,7 @@ namespace sharperio.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("dotnet_rpg.Models.AppUser", null)
+                    b.HasOne("Sharperio.Models.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -450,7 +450,7 @@ namespace sharperio.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("dotnet_rpg.Models.AppUser", null)
+                    b.HasOne("Sharperio.Models.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -459,19 +459,19 @@ namespace sharperio.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("dotnet_rpg.Models.AppUser", null)
+                    b.HasOne("Sharperio.Models.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("dotnet_rpg.Models.AppUser", b =>
+            modelBuilder.Entity("Sharperio.Models.AppUser", b =>
                 {
                     b.Navigation("Characters");
                 });
 
-            modelBuilder.Entity("dotnet_rpg.Models.Character", b =>
+            modelBuilder.Entity("Sharperio.Models.Character", b =>
                 {
                     b.Navigation("Weapon")
                         .IsRequired();

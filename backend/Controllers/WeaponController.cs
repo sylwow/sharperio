@@ -1,11 +1,11 @@
-using dotnet_rpg.Models;
-using dotnet_rpg.Models.Dto.Character;
-using dotnet_rpg.Models.Dto.Weapon;
-using dotnet_rpg.Services.WeaponService;
+using Sharperio.Models;
+using Sharperio.Models.Dto.Character;
+using Sharperio.Models.Dto.Weapon;
+using Sharperio.Services.WeaponService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace dotnet_rpg.Controllers
+namespace Sharperio.Controllers
 {
     [Authorize]
     [ApiController]

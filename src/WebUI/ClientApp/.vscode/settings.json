@@ -1,0 +1,41 @@
+{
+  "actionButtons": {
+      "defaultColor": "white", // Can also use string color names.
+      "loadNpmCommands": false, // Disables automatic generation of actions for npm commands.
+      "color": "white",
+      "commands": [
+          {
+              "name": "🚀  Yarn start",
+              "singleInstance": true,
+              "command": "yarn start", // This is executed in the terminal.
+          },
+          {
+              "name": "🐞  Start debug",
+              "singleInstance": true,
+              "useVsCodeApi": true,
+              "command": "workbench.action.debug.start"
+          },
+          {
+              "name": "🛑  Stop debug",
+              "singleInstance": true,
+              "useVsCodeApi": true,
+              "command": "workbench.action.debug.stop"
+          },
+          {
+              "name": "🔨  Yarn build",
+              "singleInstance": true,
+              "command": "yarn build",
+          },
+          {
+              "name": "🧪  Yarn test",
+              "singleInstance": true,
+              "command": "yarn test",
+          },
+          {
+              "name": "🔎  Yarn watch",
+              "singleInstance": true,
+              "command": "yarn watch",
+          },
+      ]
+  }
+}

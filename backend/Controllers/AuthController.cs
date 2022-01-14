@@ -1,14 +1,14 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using dotnet_rpg.Models;
-using dotnet_rpg.Models.Dto.User;
-using dotnet_rpg.Repositories;
+using Sharperio.Models;
+using Sharperio.Models.Dto.User;
+using Sharperio.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
-namespace dotnet_rpg.Controllers
+namespace Sharperio.Controllers
 {
     [ApiController]
     [Route("[controller]")]

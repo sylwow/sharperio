@@ -1,13 +1,13 @@
 using System.Security.Claims;
 using AutoMapper;
-using dotnet_rpg.Data;
-using dotnet_rpg.Models;
-using dotnet_rpg.Models.Dto.Character;
-using dotnet_rpg.Models.Dto.Weapon;
-using dotnet_rpg.Services.UserContext;
+using Sharperio.Data;
+using Sharperio.Models;
+using Sharperio.Models.Dto.Character;
+using Sharperio.Models.Dto.Weapon;
+using Sharperio.Services.UserContext;
 using Microsoft.EntityFrameworkCore;
 
-namespace dotnet_rpg.Services.WeaponService
+namespace Sharperio.Services.WeaponService
 {
     public class WeaponService : IWeaponService
     {

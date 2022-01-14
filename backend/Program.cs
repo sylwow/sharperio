@@ -1,14 +1,14 @@
-using dotnet_rpg.Mapper;
-using dotnet_rpg.Services.CharacterService;
-using dotnet_rpg.Data;
+using Sharperio.Mapper;
+using Sharperio.Services.CharacterService;
+using Sharperio.Data;
 using Microsoft.EntityFrameworkCore;
-using dotnet_rpg.Repositories;
+using Sharperio.Repositories;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.OpenApi.Models;
-using dotnet_rpg.Services.UserContext;
-using dotnet_rpg.Services.WeaponService;
-using dotnet_rpg.Services.FightService;
-using dotnet_rpg.Models;
+using Sharperio.Services.UserContext;
+using Sharperio.Services.WeaponService;
+using Sharperio.Services.FightService;
+using Sharperio.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 

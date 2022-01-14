@@ -1,7 +1,7 @@
-using dotnet_rpg.Models;
-using dotnet_rpg.Models.Dto.Fight;
+using Sharperio.Models;
+using Sharperio.Models.Dto.Fight;
 
-namespace dotnet_rpg.Services.FightService
+namespace Sharperio.Services.FightService
 {
     public interface IFightService
     {

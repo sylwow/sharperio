@@ -1,12 +1,12 @@
 using AutoMapper;
-using dotnet_rpg.Data;
-using dotnet_rpg.Models;
-using dotnet_rpg.Models.Dto.Character;
-using dotnet_rpg.Models.Dto.Skill;
-using dotnet_rpg.Services.UserContext;
+using Sharperio.Data;
+using Sharperio.Models;
+using Sharperio.Models.Dto.Character;
+using Sharperio.Models.Dto.Skill;
+using Sharperio.Services.UserContext;
 using Microsoft.EntityFrameworkCore;
 
-namespace dotnet_rpg.Services.CharacterService
+namespace Sharperio.Services.CharacterService
 {
     public class CharacterService : ICharacterService
     {

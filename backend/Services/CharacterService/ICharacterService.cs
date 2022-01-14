@@ -1,8 +1,8 @@
-using dotnet_rpg.Models;
-using dotnet_rpg.Models.Dto.Character;
-using dotnet_rpg.Models.Dto.Skill;
+using Sharperio.Models;
+using Sharperio.Models.Dto.Character;
+using Sharperio.Models.Dto.Skill;
 
-namespace dotnet_rpg.Services.CharacterService
+namespace Sharperio.Services.CharacterService
 {
     public interface ICharacterService
     {

@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "dotnet_rpg": {
+    "Sharperio": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,

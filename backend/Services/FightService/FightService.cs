@@ -1,11 +1,11 @@
 using AutoMapper;
-using dotnet_rpg.Data;
-using dotnet_rpg.Models;
-using dotnet_rpg.Models.Dto.Fight;
-using dotnet_rpg.Services.UserContext;
+using Sharperio.Data;
+using Sharperio.Models;
+using Sharperio.Models.Dto.Fight;
+using Sharperio.Services.UserContext;
 using Microsoft.EntityFrameworkCore;
 
-namespace dotnet_rpg.Services.FightService
+namespace Sharperio.Services.FightService
 {
     public class FightService : IFightService
     {

@@ -1,11 +1,11 @@
 using AutoMapper;
-using dotnet_rpg.Models;
-using dotnet_rpg.Models.Dto.Character;
-using dotnet_rpg.Models.Dto.Fight;
-using dotnet_rpg.Models.Dto.Skill;
-using dotnet_rpg.Models.Dto.Weapon;
+using Sharperio.Models;
+using Sharperio.Models.Dto.Character;
+using Sharperio.Models.Dto.Fight;
+using Sharperio.Models.Dto.Skill;
+using Sharperio.Models.Dto.Weapon;
 
-namespace dotnet_rpg.Mapper
+namespace Sharperio.Mapper
 {
     public class Mappings : Profile
     {

@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace dotnet_rpg.Services.UserContext
+namespace Sharperio.Services.UserContext
 {
     public class UserContext : IUserContext
     {
