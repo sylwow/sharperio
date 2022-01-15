@@ -3,6 +3,7 @@ using System;
 using CleanArchitecture.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CleanArchitecture.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220115135748_addCharacters")]
+    partial class addCharacters
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,147 +23,6 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("CleanArchitecture.Domain.Entities.Character", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Armor")
-                        .HasColumnType("integer");
-
-                    b.Property<double>("ArmorPenetration")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("AttackSpeed")
-                        .HasColumnType("integer");
-
-                    b.Property<double>("BlockChanse")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("Class")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Defeats")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Dexterity")
-                        .HasColumnType("integer");
-
-                    b.Property<double>("DodgeChanse")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("Experience")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Fear")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Fights")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("GeneralKills")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Healing")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("HitPoints")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Inteligence")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("LastModified")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MagicalAbsorption")
-                        .HasColumnType("integer");
-
-                    b.Property<double>("MagicalCriticModifier")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("MagicalCriticalHitChange")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("MagicalDamage")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MagicalResistance")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ManaOrEnergy")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MaxHitPoints")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("NickName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<double>("PairChanse")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("PhisicalAbsorption")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("PhisicalDamage")
-                        .HasColumnType("integer");
-
-                    b.Property<double>("PhysicalCriticModifier")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("PhysicalCriticalHitChange")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("PoisonDamage")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("PoisonResistance")
-                        .HasColumnType("integer");
-
-                    b.Property<double>("RangeCriticModifier")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("RangeCriticalHitChange")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("RangeDamage")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Server")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Strength")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Victories")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Characters");
-                });
 
             modelBuilder.Entity("CleanArchitecture.Domain.Entities.TodoItem", b =>
                 {

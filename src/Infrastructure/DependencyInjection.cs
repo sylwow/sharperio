@@ -28,6 +28,8 @@ public static class DependencyInjection
                     b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
         }
 
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 
         services.AddScoped<IDomainEventService, DomainEventService>();
