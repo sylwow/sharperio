@@ -2,6 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { AuthorizeService } from "../../api-authorization/authorize.service";
 
 import { faCopy } from "@fortawesome/free-solid-svg-icons";
+import { map } from "rxjs/operators";
 
 @Component({
   selector: "app-token-component",
@@ -14,11 +15,13 @@ export class TokenComponent implements OnInit {
 
   faCopy = faCopy;
 
-  constructor(private authorizeService: AuthorizeService) {}
+  constructor(private authorizeService: AuthorizeService) { }
 
   ngOnInit(): void {
     this.isCopied = false;
-    this.authorizeService.getAccessToken().subscribe(
+    this.authorizeService.isAuthenticated$.pipe(
+      map(_ => this.authorizeService.accessToken)
+    ).subscribe(
       (t) => {
         this.token = "Bearer " + t;
         this.isError = false;

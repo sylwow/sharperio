@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using CleanArchitecture.Application.Common.Interfaces;
+using MediatR;
 
 namespace CleanArchitecture.Application.WeatherForecasts.Queries.GetWeatherForecasts;
 
@@ -10,11 +11,18 @@ public class GetWeatherForecastsQueryHandler : IRequestHandler<GetWeatherForecas
 {
     private static readonly string[] Summaries = new[]
     {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
+        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    };
 
+    private readonly ICurrentUserService _userService;
+    public GetWeatherForecastsQueryHandler(ICurrentUserService userService)
+    {
+        _userService = userService;
+    }
     public Task<IEnumerable<WeatherForecast>> Handle(GetWeatherForecastsQuery request, CancellationToken cancellationToken)
     {
+        var user = _userService.UserId;
+
         var rng = new Random();
 
         var vm = Enumerable.Range(1, 5).Select(index => new WeatherForecast

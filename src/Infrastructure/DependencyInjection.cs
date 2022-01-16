@@ -1,13 +1,19 @@
-﻿using CleanArchitecture.Application.Common.Interfaces;
+﻿using System.Security.Claims;
+using CleanArchitecture.Application.Common.Interfaces;
 using CleanArchitecture.Infrastructure.Files;
-using CleanArchitecture.Infrastructure.Identity;
 using CleanArchitecture.Infrastructure.Persistence;
 using CleanArchitecture.Infrastructure.Services;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 
 namespace CleanArchitecture.Infrastructure;
 
@@ -20,18 +26,15 @@ public static class DependencyInjection
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseInMemoryDatabase("CleanArchitectureDb");
-
-                options.UseOpenIddict();
             });
         }
         else
         {
-            services.AddDbContext<ApplicationDbContext>(options => {
+            services.AddDbContext<ApplicationDbContext>(options =>
+            {
                 options.UseNpgsql(
                     configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName));
-
-                options.UseOpenIddict();
             });
         }
 
@@ -41,62 +44,41 @@ public static class DependencyInjection
 
         services.AddScoped<IDomainEventService, DomainEventService>();
 
-        services.AddOpenIddict()
-
-        // Register the OpenIddict core components.
-        .AddCore(options =>
-        {
-            // Configure OpenIddict to use the EF Core stores/models.
-            options.UseEntityFrameworkCore()
-                .UseDbContext<ApplicationDbContext>();
-        })
-
-        // Register the OpenIddict server components.
-        .AddServer(options =>
-        {
-            options
-                .AllowAuthorizationCodeFlow()
-                .RequireProofKeyForCodeExchange()
-                .AllowClientCredentialsFlow()
-                .AllowRefreshTokenFlow();
-
-            options
-                .SetAuthorizationEndpointUris("/connect/authorize")
-                .SetTokenEndpointUris("/connect/token");
-
-            // Encryption and signing of tokens
-            options
-                .AddEphemeralEncryptionKey()
-                .AddEphemeralSigningKey()
-                .DisableAccessTokenEncryption();
-
-            // Register scopes (permissions)
-            options.RegisterScopes("api");
-
-            // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
-            options
-                .UseAspNetCore()
-                .EnableTokenEndpointPassthrough()
-                .EnableAuthorizationEndpointPassthrough();
-        });
-
-        services
-            .AddDefaultIdentity<ApplicationUser>()
-            .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
-
-        //services.AddIdentityServer()
-        //  .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
-
         services.AddTransient<IDateTime, DateTimeService>();
-        services.AddTransient<IIdentityService, IdentityService>();
+        //services.AddTransient<IIdentityService, IdentityService>();
         services.AddTransient<ICsvFileBuilder, CsvFileBuilder>();
 
-        services.AddAuthentication()
-            .AddIdentityServerJwt();
 
-        services.AddAuthorization(options => 
-            options.AddPolicy("CanPurge", policy => policy.RequireRole("Administrator")));
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.Authority = $"{configuration["Oidc:AuthServerUrl"]}/realms/{configuration["Oidc:Realm"]}";
+                options.Audience = configuration["Oidc:ClientId"];
+                options.IncludeErrorDetails = true;
+                options.SaveToken = false;
+                options.RequireHttpsMetadata = false;
+                options.MetadataAddress = $"{configuration["Oidc:AuthServerUrl"]}/realms/{configuration["Oidc:Realm"]}/.well-known/openid-configuration"; ;
+
+                options.Events = new JwtBearerEvents()
+                {
+                    OnAuthenticationFailed = c =>
+                    {
+                        c.NoResult();
+
+                        string errorTextDEfault = "An error occured processing your authentication.";
+
+                        c.Response.StatusCode = 401;
+                        c.Response.ContentType = "text/plain";
+
+                        return c.Response.WriteAsync(errorTextDEfault);
+                    },
+                };
+            });
+
+        services.AddAuthorization(options =>
+        {
+            options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme).RequireAuthenticatedUser().Build();
+        });
 
         return services;
     }

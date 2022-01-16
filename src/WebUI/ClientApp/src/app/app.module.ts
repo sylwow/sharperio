@@ -16,6 +16,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ModalModule } from 'ngx-bootstrap/modal';
 import { AppRoutingModule } from './app-routing.module';
 import { TokenComponent } from './token/token.component';
+import { OAuthModule } from 'angular-oauth2-oidc';
+import { API_BASE_URL } from './web-api-client';
+import { environment } from 'src/environments/environment';
 
 @NgModule({
   declarations: [
@@ -35,9 +38,11 @@ import { TokenComponent } from './token/token.component';
     ApiAuthorizationModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    ModalModule.forRoot()
+    ModalModule.forRoot(),
+    OAuthModule.forRoot()
   ],
   providers: [
+    { provide: API_BASE_URL, useValue: environment.apiRoot },
     { provide: HTTP_INTERCEPTORS, useClass: AuthorizeInterceptor, multi: true },
   ],
   bootstrap: [AppComponent]

@@ -9,14 +9,11 @@ namespace CleanArchitecture.Application.Common.Behaviours;
 public class AuthorizationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
 {
     private readonly ICurrentUserService _currentUserService;
-    private readonly IIdentityService _identityService;
 
     public AuthorizationBehaviour(
-        ICurrentUserService currentUserService,
-        IIdentityService identityService)
+        ICurrentUserService currentUserService)
     {
         _currentUserService = currentUserService;
-        _identityService = identityService;
     }
 
     public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
@@ -36,9 +33,9 @@ public class AuthorizationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRe
 
             if (authorizeAttributesWithRoles.Any())
             {
-                var authorized = false;
+                var authorized = true;
 
-                foreach (var roles in authorizeAttributesWithRoles.Select(a => a.Roles.Split(',')))
+                /*foreach (var roles in authorizeAttributesWithRoles.Select(a => a.Roles.Split(',')))
                 {
                     foreach (var role in roles)
                     {
@@ -49,7 +46,7 @@ public class AuthorizationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRe
                             break;
                         }
                     }
-                }
+                }*/
 
                 // Must be a member of at least one role in roles
                 if (!authorized)
@@ -64,7 +61,7 @@ public class AuthorizationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRe
             {
                 foreach (var policy in authorizeAttributesWithPolicies.Select(a => a.Policy))
                 {
-                    var authorized = await _identityService.AuthorizeAsync(_currentUserService.UserId, policy);
+                    var authorized = true; // await _identityService.AuthorizeAsync(_currentUserService.UserId, policy);
 
                     if (!authorized)
                     {

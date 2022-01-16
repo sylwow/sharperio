@@ -50,6 +50,60 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Characters",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    NickName = table.Column<string>(type: "text", nullable: false),
+                    Class = table.Column<int>(type: "integer", nullable: false),
+                    Server = table.Column<int>(type: "integer", nullable: false),
+                    Experience = table.Column<int>(type: "integer", nullable: false),
+                    Level = table.Column<int>(type: "integer", nullable: false),
+                    Strength = table.Column<int>(type: "integer", nullable: false),
+                    Dexterity = table.Column<int>(type: "integer", nullable: false),
+                    Inteligence = table.Column<int>(type: "integer", nullable: false),
+                    HitPoints = table.Column<int>(type: "integer", nullable: false),
+                    MaxHitPoints = table.Column<int>(type: "integer", nullable: false),
+                    AttackSpeed = table.Column<int>(type: "integer", nullable: false),
+                    Healing = table.Column<int>(type: "integer", nullable: false),
+                    ManaOrEnergy = table.Column<int>(type: "integer", nullable: false),
+                    PhisicalDamage = table.Column<int>(type: "integer", nullable: false),
+                    RangeDamage = table.Column<int>(type: "integer", nullable: false),
+                    MagicalDamage = table.Column<int>(type: "integer", nullable: false),
+                    PoisonDamage = table.Column<int>(type: "integer", nullable: false),
+                    Armor = table.Column<int>(type: "integer", nullable: false),
+                    MagicalResistance = table.Column<int>(type: "integer", nullable: false),
+                    PoisonResistance = table.Column<int>(type: "integer", nullable: false),
+                    PhisicalAbsorption = table.Column<int>(type: "integer", nullable: false),
+                    MagicalAbsorption = table.Column<int>(type: "integer", nullable: false),
+                    Fear = table.Column<int>(type: "integer", nullable: false),
+                    PhysicalCriticalHitChange = table.Column<double>(type: "double precision", nullable: false),
+                    RangeCriticalHitChange = table.Column<double>(type: "double precision", nullable: false),
+                    MagicalCriticalHitChange = table.Column<double>(type: "double precision", nullable: false),
+                    PhysicalCriticModifier = table.Column<double>(type: "double precision", nullable: false),
+                    RangeCriticModifier = table.Column<double>(type: "double precision", nullable: false),
+                    MagicalCriticModifier = table.Column<double>(type: "double precision", nullable: false),
+                    ArmorPenetration = table.Column<double>(type: "double precision", nullable: false),
+                    DodgeChanse = table.Column<double>(type: "double precision", nullable: false),
+                    BlockChanse = table.Column<double>(type: "double precision", nullable: false),
+                    PairChanse = table.Column<double>(type: "double precision", nullable: false),
+                    Fights = table.Column<int>(type: "integer", nullable: false),
+                    Victories = table.Column<int>(type: "integer", nullable: false),
+                    Defeats = table.Column<int>(type: "integer", nullable: false),
+                    GeneralKills = table.Column<int>(type: "integer", nullable: false),
+                    Created = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    LastModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    LastModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Characters", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DeviceCodes",
                 columns: table => new
                 {
@@ -59,8 +113,8 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
                     SessionId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     ClientId = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    CreationTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Expiration = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    Expiration = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Data = table.Column<string>(type: "character varying(50000)", maxLength: 50000, nullable: false)
                 },
                 constraints: table =>
@@ -74,7 +128,7 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
                     Version = table.Column<int>(type: "integer", nullable: false),
-                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Created = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Use = table.Column<string>(type: "text", nullable: true),
                     Algorithm = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     IsX509Certificate = table.Column<bool>(type: "boolean", nullable: false),
@@ -96,9 +150,9 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
                     SessionId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     ClientId = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    CreationTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Expiration = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    ConsumedTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    Expiration = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    ConsumedTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     Data = table.Column<string>(type: "character varying(50000)", maxLength: 50000, nullable: false)
                 },
                 constraints: table =>
@@ -114,9 +168,9 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Colour_Code = table.Column<string>(type: "text", nullable: false),
-                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Created = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
-                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    LastModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     LastModifiedBy = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -170,8 +224,8 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
-                    ProviderKey = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    ProviderKey = table.Column<string>(type: "text", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
                     UserId = table.Column<string>(type: "text", nullable: false)
                 },
@@ -215,8 +269,8 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "text", nullable: false),
-                    LoginProvider = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
-                    Name = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
                     Value = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -240,11 +294,11 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
                     Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Note = table.Column<string>(type: "text", nullable: true),
                     Priority = table.Column<int>(type: "integer", nullable: false),
-                    Reminder = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Reminder = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     Done = table.Column<bool>(type: "boolean", nullable: false),
-                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Created = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
-                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    LastModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     LastModifiedBy = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -353,6 +407,9 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Characters");
 
             migrationBuilder.DropTable(
                 name: "DeviceCodes");
