@@ -29,10 +29,14 @@ public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>, 
     }
 
     public DbSet<TodoList> TodoLists => Set<TodoList>();
-
     public DbSet<TodoItem> TodoItems => Set<TodoItem>();
-
-    public DbSet<Character> Characters => Set<Character>();
+    public DbSet<UserTables> UserTables => Set<UserTables>();
+    public DbSet<Table> Tables => Set<Table>();
+    public DbSet<Column> Columns => Set<Column>();
+    public DbSet<Item> Items => Set<Item>();
+    public DbSet<Label> Labels => Set<Label>();
+    public DbSet<Comment> Comments => Set<Comment>();
+    public DbSet<Cover> Covers => Set<Cover>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
     {

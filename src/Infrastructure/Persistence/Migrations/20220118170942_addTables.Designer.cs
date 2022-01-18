@@ -3,6 +3,7 @@ using System;
 using CleanArchitecture.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CleanArchitecture.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220118170942_addTables")]
+    partial class addTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -244,14 +246,9 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("UserTablesId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CoverId");
-
-                    b.HasIndex("UserTablesId");
 
                     b.ToTable("Tables");
                 });
@@ -331,23 +328,6 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TodoLists");
-                });
-
-            modelBuilder.Entity("CleanArchitecture.Domain.Entities.UserTables", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ExternalId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UserTables");
                 });
 
             modelBuilder.Entity("CleanArchitecture.Infrastructure.Identity.ApplicationUser", b =>
@@ -731,10 +711,6 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CleanArchitecture.Domain.Entities.UserTables", null)
-                        .WithMany("Tables")
-                        .HasForeignKey("UserTablesId");
-
                     b.Navigation("Cover");
                 });
 
@@ -843,11 +819,6 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("CleanArchitecture.Domain.Entities.TodoList", b =>
                 {
                     b.Navigation("Items");
-                });
-
-            modelBuilder.Entity("CleanArchitecture.Domain.Entities.UserTables", b =>
-                {
-                    b.Navigation("Tables");
                 });
 #pragma warning restore 612, 618
         }
