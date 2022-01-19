@@ -28,18 +28,14 @@ public class CreateTableCommandHandler : IRequestHandler<CreateTableCommand, Gui
             throw new InvalidOperationException();
         }
 
-        var userTables = await _context.UserTables
-            .Where(u => u.ExternalId == _currentUserService.UserId)
-            .Include(u => u.Tables)
-            .FirstOrDefaultAsync(cancellationToken);
-
         var entity = new Table
         {
             OwnerId = _currentUserService.UserId,
             Title = request.Title,
+            UsersWithAccess = { _currentUserService.UserId }
         };
 
-        userTables?.Tables.Add(entity);
+        _context.Tables.Add(entity);
 
         await _context.SaveChangesAsync(cancellationToken);
 

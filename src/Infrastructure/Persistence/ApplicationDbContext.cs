@@ -30,7 +30,6 @@ public class ApplicationDbContext : ApiAuthorizationDbContext<ApplicationUser>, 
 
     public DbSet<TodoList> TodoLists => Set<TodoList>();
     public DbSet<TodoItem> TodoItems => Set<TodoItem>();
-    public DbSet<UserTables> UserTables => Set<UserTables>();
     public DbSet<Table> Tables => Set<Table>();
     public DbSet<Column> Columns => Set<Column>();
     public DbSet<Item> Items => Set<Item>();

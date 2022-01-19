@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using CleanArchitecture.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CleanArchitecture.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220119195855_addUserToTables4")]
+    partial class addUserToTables4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -141,7 +143,7 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ColumnId")
+                    b.Property<int?>("ColumnId")
                         .HasColumnType("integer");
 
                     b.Property<int>("CoverId")
@@ -694,19 +696,15 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("CleanArchitecture.Domain.Entities.Item", b =>
                 {
-                    b.HasOne("CleanArchitecture.Domain.Entities.Column", "Column")
+                    b.HasOne("CleanArchitecture.Domain.Entities.Column", null)
                         .WithMany("Items")
-                        .HasForeignKey("ColumnId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ColumnId");
 
                     b.HasOne("CleanArchitecture.Domain.Entities.Cover", "Cover")
                         .WithMany()
                         .HasForeignKey("CoverId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Column");
 
                     b.Navigation("Cover");
                 });

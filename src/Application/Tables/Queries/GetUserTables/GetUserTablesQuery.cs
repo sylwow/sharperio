@@ -26,11 +26,10 @@ public class GetUserTablesQueryHandler : IRequestHandler<GetUserTablesQuery, Lis
 
     public async Task<List<UserTableDto>?> Handle(GetUserTablesQuery request, CancellationToken cancellationToken)
     {
-        return await _context.UserTables
-            .Where(u => u.ExternalId == _currentUserService.UserId)
-            .Include(u => u.Tables)
-            .Select(u => u.Tables)
-            .ProjectTo<List<UserTableDto>>(_mapper.ConfigurationProvider)
-            .FirstOrDefaultAsync(cancellationToken);
+        var tables =  await _context.Tables
+            .Where(u => u.OwnerId == _currentUserService.UserId || u.UsersWithAccess.Contains(_currentUserService.UserId))
+            .ToListAsync(cancellationToken);
+
+        return _mapper.Map<List<UserTableDto>>(tables);
     }
 }

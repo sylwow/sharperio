@@ -6,6 +6,156 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/Column/{TableId}": {
+      "post": {
+        "tags": [
+          "Column"
+        ],
+        "operationId": "Column_CreatePOST",
+        "parameters": [
+          {
+            "name": "tableId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateColumnCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Column/{id}/order": {
+      "patch": {
+        "tags": [
+          "Column"
+        ],
+        "operationId": "Column_CreatePATCH",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateColumnOrderCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Item/{ColumnId}": {
+      "post": {
+        "tags": [
+          "Item"
+        ],
+        "operationId": "Item_Create",
+        "parameters": [
+          {
+            "name": "columnId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateItemCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
     "/api/Table/user/list": {
       "get": {
         "tags": [
@@ -50,6 +200,40 @@
       }
     },
     "/api/Table": {
+      "get": {
+        "tags": [
+          "Table"
+        ],
+        "operationId": "Table_Get",
+        "parameters": [
+          {
+            "name": "TableId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TableDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
       "post": {
         "tags": [
           "Table"
@@ -526,7 +710,20 @@
   },
   "components": {
     "schemas": {
-      "UserTableDto": {
+      "CreateColumnCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tableId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateColumnOrderCommand": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -534,15 +731,49 @@
             "type": "integer",
             "format": "int32"
           },
-          "ownerId": {
+          "order": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CreateItemCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "columnId": {
             "type": "integer",
             "format": "int32"
           },
           "title": {
             "type": "string"
           },
+          "note": {
+            "type": "string"
+          }
+        }
+      },
+      "UserTableDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
           "cover": {
-            "$ref": "#/components/schemas/Cover"
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Cover"
+              }
+            ]
           },
           "isPrivate": {
             "type": "boolean"
@@ -602,6 +833,241 @@
       "GetUserTablesQuery": {
         "type": "object",
         "additionalProperties": false
+      },
+      "TableDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "cover": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Cover"
+              }
+            ]
+          },
+          "isPrivate": {
+            "type": "boolean"
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ColumnDto"
+            }
+          },
+          "usersWithAccess": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ColumnDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          },
+          "isArhived": {
+            "type": "boolean"
+          },
+          "order": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          }
+        }
+      },
+      "Item": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AuditableEntity"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "title": {
+                "type": "string"
+              },
+              "note": {
+                "type": "string"
+              },
+              "order": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "cover": {
+                "$ref": "#/components/schemas/Cover"
+              },
+              "column": {
+                "$ref": "#/components/schemas/Column"
+              },
+              "labels": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Label"
+                }
+              },
+              "comments": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Comment"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Column": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AuditableEntity"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "title": {
+                "type": "string"
+              },
+              "isArhived": {
+                "type": "boolean"
+              },
+              "order": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Item"
+                }
+              },
+              "table": {
+                "$ref": "#/components/schemas/Table"
+              }
+            }
+          }
+        ]
+      },
+      "Table": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AuditableEntity"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "guid"
+              },
+              "ownerId": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "cover": {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Cover"
+                  }
+                ]
+              },
+              "isPrivate": {
+                "type": "boolean"
+              },
+              "columns": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Column"
+                }
+              },
+              "usersWithAccess": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Label": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AuditableEntity"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "title": {
+                "type": "string"
+              },
+              "color": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "Comment": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AuditableEntity"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
       },
       "CreateTableCommand": {
         "type": "object",

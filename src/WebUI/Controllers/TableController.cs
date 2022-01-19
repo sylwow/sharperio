@@ -1,4 +1,5 @@
 ﻿using CleanArchitecture.Application.Tables.Commands.CreateTable;
+using CleanArchitecture.Application.Tables.Queries.GetTable;
 using CleanArchitecture.Application.Tables.Queries.GetUserTables;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,12 +14,19 @@ public class TableController : ApiControllerBase
     {
         return await Mediator.Send(query);
     }
-    
+
+    [HttpGet()]
+    public async Task<ActionResult<TableDto?>> Get([FromQuery] GetTableQuery query)
+    {
+        return await Mediator.Send(query);
+    }
+
     [HttpPost]
     public async Task<ActionResult<Guid>> Create(CreateTableCommand command)
     {
         return await Mediator.Send(command);
     }
+
     /*
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(int id, UpdateTodoItemCommand command)

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using CleanArchitecture.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CleanArchitecture.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220119185136_addUserToTables2")]
+    partial class addUserToTables2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,7 +51,7 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
                     b.Property<int>("Order")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("TableId")
+                    b.Property<Guid?>("TableId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Title")
@@ -141,7 +143,7 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ColumnId")
+                    b.Property<int?>("ColumnId")
                         .HasColumnType("integer");
 
                     b.Property<int>("CoverId")
@@ -162,9 +164,6 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
                     b.Property<string>("Note")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -676,13 +675,9 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("CleanArchitecture.Domain.Entities.Column", b =>
                 {
-                    b.HasOne("CleanArchitecture.Domain.Entities.Table", "Table")
+                    b.HasOne("CleanArchitecture.Domain.Entities.Table", null)
                         .WithMany("Columns")
-                        .HasForeignKey("TableId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Table");
+                        .HasForeignKey("TableId");
                 });
 
             modelBuilder.Entity("CleanArchitecture.Domain.Entities.Comment", b =>
@@ -694,19 +689,15 @@ namespace CleanArchitecture.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("CleanArchitecture.Domain.Entities.Item", b =>
                 {
-                    b.HasOne("CleanArchitecture.Domain.Entities.Column", "Column")
+                    b.HasOne("CleanArchitecture.Domain.Entities.Column", null)
                         .WithMany("Items")
-                        .HasForeignKey("ColumnId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ColumnId");
 
                     b.HasOne("CleanArchitecture.Domain.Entities.Cover", "Cover")
                         .WithMany()
                         .HasForeignKey("CoverId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Column");
 
                     b.Navigation("Cover");
                 });
