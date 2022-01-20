@@ -39,7 +39,7 @@ public class Startup
             options.Filters.Add<ApiExceptionFilterAttribute>())
                 .AddFluentValidation(x => x.AutomaticValidationEnabled = false);
 
-        services.AddRazorPages();
+        //services.AddRazorPages();
 
         // Customise default API behaviour
         services.Configure<ApiBehaviorOptions>(options => 
@@ -116,7 +116,7 @@ public class Startup
             endpoints.MapControllerRoute(
                 name: "default",
                 pattern: "{controller}/{action=Index}/{id?}");
-            endpoints.MapRazorPages();
+            //endpoints.MapRazorPages();
         });
 
         app.UseSpa(spa =>
@@ -129,7 +129,7 @@ public class Startup
             if (env.IsDevelopment())
             {
                     //spa.UseAngularCliServer(npmScript: "start");
-                    spa.UseProxyToSpaDevelopmentServer(Configuration["SpaBaseUrl"] ?? "http://localhost:4200");
+                    //spa.UseProxyToSpaDevelopmentServer(Configuration["SpaBaseUrl"] ?? "http://localhost:4200");
             }
         });
     }

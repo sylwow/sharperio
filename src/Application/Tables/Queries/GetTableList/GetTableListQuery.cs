@@ -1,35 +1,35 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using CleanArchitecture.Application.Common.Interfaces;
-using CleanArchitecture.Application.Tables.Queries.GetUserTables;
+using CleanArchitecture.Application.Tables.Queries.GetTableList;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CleanArchitecture.Application.Tables.Queries.GetUserTables;
+namespace CleanArchitecture.Application.Tables.Queries.GetTableList;
 
-public class GetUserTablesQuery : IRequest<List<UserTableDto>?>
+public class GetTableListQuery : IRequest<TableDtoList?>
 {
 }
 
-public class GetUserTablesQueryHandler : IRequestHandler<GetUserTablesQuery, List<UserTableDto>?>
+public class GetTableListQueryHandler : IRequestHandler<GetTableListQuery, TableDtoList?>
 {
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
     private readonly ICurrentUserService _currentUserService;
 
-    public GetUserTablesQueryHandler(IApplicationDbContext context, IMapper mapper, ICurrentUserService currentUserService)
+    public GetTableListQueryHandler(IApplicationDbContext context, IMapper mapper, ICurrentUserService currentUserService)
     {
         _context = context;
         _mapper = mapper;
         _currentUserService = currentUserService;
     }
 
-    public async Task<List<UserTableDto>?> Handle(GetUserTablesQuery request, CancellationToken cancellationToken)
+    public async Task<TableDtoList?> Handle(GetTableListQuery request, CancellationToken cancellationToken)
     {
         var tables =  await _context.Tables
             .Where(u => u.OwnerId == _currentUserService.UserId || u.UsersWithAccess.Contains(_currentUserService.UserId))
             .ToListAsync(cancellationToken);
 
-        return _mapper.Map<List<UserTableDto>>(tables);
+        return _mapper.Map<TableDtoList?>(tables);
     }
 }

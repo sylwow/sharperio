@@ -215,8 +215,10 @@ export class ItemClient implements IItemClient {
 }
 
 export interface ITableClient {
-    getUserTables(query: GetUserTablesQuery | null | undefined): Observable<UserTableDto[]>;
-    get(tableId: string | undefined): Observable<TableDto>;
+    getUserTables(): Observable<TableDto[]>;
+    get(id: string): Observable<TableDto2>;
+    update(id: string, command: UpdateTableCommand): Observable<FileResponse>;
+    delete(id: string): Observable<FileResponse>;
     create(command: CreateTableCommand): Observable<string>;
 }
 
@@ -233,10 +235,8 @@ export class TableClient implements ITableClient {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
-    getUserTables(query: GetUserTablesQuery | null | undefined) : Observable<UserTableDto[]> {
-        let url_ = this.baseUrl + "/api/Table/user/list?";
-        if (query !== undefined && query !== null)
-            url_ += "query=" + encodeURIComponent("" + query) + "&";
+    getUserTables() : Observable<TableDto[]> {
+        let url_ = this.baseUrl + "/api/Table/list";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -254,14 +254,14 @@ export class TableClient implements ITableClient {
                 try {
                     return this.processGetUserTables(<any>response_);
                 } catch (e) {
-                    return <Observable<UserTableDto[]>><any>_observableThrow(e);
+                    return <Observable<TableDto[]>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<UserTableDto[]>><any>_observableThrow(response_);
+                return <Observable<TableDto[]>><any>_observableThrow(response_);
         }));
     }
 
-    protected processGetUserTables(response: HttpResponseBase): Observable<UserTableDto[]> {
+    protected processGetUserTables(response: HttpResponseBase): Observable<TableDto[]> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -275,7 +275,7 @@ export class TableClient implements ITableClient {
             if (Array.isArray(resultData200)) {
                 result200 = [] as any;
                 for (let item of resultData200)
-                    result200!.push(UserTableDto.fromJS(item));
+                    result200!.push(TableDto.fromJS(item));
             }
             else {
                 result200 = <any>null;
@@ -287,15 +287,14 @@ export class TableClient implements ITableClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<UserTableDto[]>(<any>null);
+        return _observableOf<TableDto[]>(<any>null);
     }
 
-    get(tableId: string | undefined) : Observable<TableDto> {
-        let url_ = this.baseUrl + "/api/Table?";
-        if (tableId === null)
-            throw new Error("The parameter 'tableId' cannot be null.");
-        else if (tableId !== undefined)
-            url_ += "TableId=" + encodeURIComponent("" + tableId) + "&";
+    get(id: string) : Observable<TableDto2> {
+        let url_ = this.baseUrl + "/api/Table/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -313,14 +312,14 @@ export class TableClient implements ITableClient {
                 try {
                     return this.processGet(<any>response_);
                 } catch (e) {
-                    return <Observable<TableDto>><any>_observableThrow(e);
+                    return <Observable<TableDto2>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<TableDto>><any>_observableThrow(response_);
+                return <Observable<TableDto2>><any>_observableThrow(response_);
         }));
     }
 
-    protected processGet(response: HttpResponseBase): Observable<TableDto> {
+    protected processGet(response: HttpResponseBase): Observable<TableDto2> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -331,7 +330,7 @@ export class TableClient implements ITableClient {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = TableDto.fromJS(resultData200);
+            result200 = TableDto2.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -339,7 +338,109 @@ export class TableClient implements ITableClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<TableDto>(<any>null);
+        return _observableOf<TableDto2>(<any>null);
+    }
+
+    update(id: string, command: UpdateTableCommand) : Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/Table/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdate(<any>response_);
+                } catch (e) {
+                    return <Observable<FileResponse>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<FileResponse>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processUpdate(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<FileResponse>(<any>null);
+    }
+
+    delete(id: string) : Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/Table/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDelete(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDelete(<any>response_);
+                } catch (e) {
+                    return <Observable<FileResponse>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<FileResponse>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processDelete(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<FileResponse>(<any>null);
     }
 
     create(command: CreateTableCommand) : Observable<string> {
@@ -1155,14 +1256,14 @@ export interface ICreateItemCommand {
     note?: string;
 }
 
-export class UserTableDto implements IUserTableDto {
+export class TableDto implements ITableDto {
     id?: string;
     ownerId?: string;
     title?: string;
     cover?: Cover | undefined;
     isPrivate?: boolean;
 
-    constructor(data?: IUserTableDto) {
+    constructor(data?: ITableDto) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1181,9 +1282,9 @@ export class UserTableDto implements IUserTableDto {
         }
     }
 
-    static fromJS(data: any): UserTableDto {
+    static fromJS(data: any): TableDto {
         data = typeof data === 'object' ? data : {};
-        let result = new UserTableDto();
+        let result = new TableDto();
         result.init(data);
         return result;
     }
@@ -1199,7 +1300,7 @@ export class UserTableDto implements IUserTableDto {
     }
 }
 
-export interface IUserTableDto {
+export interface ITableDto {
     id?: string;
     ownerId?: string;
     title?: string;
@@ -1298,37 +1399,7 @@ export interface ICover extends IAuditableEntity {
     imageUrl?: string;
 }
 
-export class GetUserTablesQuery implements IGetUserTablesQuery {
-
-    constructor(data?: IGetUserTablesQuery) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-    }
-
-    static fromJS(data: any): GetUserTablesQuery {
-        data = typeof data === 'object' ? data : {};
-        let result = new GetUserTablesQuery();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        return data; 
-    }
-}
-
-export interface IGetUserTablesQuery {
-}
-
-export class TableDto implements ITableDto {
+export class TableDto2 implements ITableDto2 {
     id?: string;
     ownerId?: string;
     title?: string;
@@ -1337,7 +1408,7 @@ export class TableDto implements ITableDto {
     columns?: ColumnDto[];
     usersWithAccess?: string[];
 
-    constructor(data?: ITableDto) {
+    constructor(data?: ITableDto2) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1366,9 +1437,9 @@ export class TableDto implements ITableDto {
         }
     }
 
-    static fromJS(data: any): TableDto {
+    static fromJS(data: any): TableDto2 {
         data = typeof data === 'object' ? data : {};
-        let result = new TableDto();
+        let result = new TableDto2();
         result.init(data);
         return result;
     }
@@ -1394,7 +1465,7 @@ export class TableDto implements ITableDto {
     }
 }
 
-export interface ITableDto {
+export interface ITableDto2 {
     id?: string;
     ownerId?: string;
     title?: string;
@@ -1787,6 +1858,46 @@ export class CreateTableCommand implements ICreateTableCommand {
 
 export interface ICreateTableCommand {
     title?: string;
+}
+
+export class UpdateTableCommand implements IUpdateTableCommand {
+    id?: string;
+    title?: string | undefined;
+
+    constructor(data?: IUpdateTableCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.title = _data["title"];
+        }
+    }
+
+    static fromJS(data: any): UpdateTableCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateTableCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["title"] = this.title;
+        return data; 
+    }
+}
+
+export interface IUpdateTableCommand {
+    id?: string;
+    title?: string | undefined;
 }
 
 export class PaginatedListOfTodoItemBriefDto implements IPaginatedListOfTodoItemBriefDto {

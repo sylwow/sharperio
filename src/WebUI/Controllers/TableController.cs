@@ -1,6 +1,8 @@
 ﻿using CleanArchitecture.Application.Tables.Commands.CreateTable;
+using CleanArchitecture.Application.Tables.Commands.DeleteTable;
+using CleanArchitecture.Application.Tables.Commands.UpdateTable;
 using CleanArchitecture.Application.Tables.Queries.GetTable;
-using CleanArchitecture.Application.Tables.Queries.GetUserTables;
+using CleanArchitecture.Application.Tables.Queries.GetTableList;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,16 +11,16 @@ namespace CleanArchitecture.WebUI.Controllers;
 [Authorize]
 public class TableController : ApiControllerBase
 {
-    [HttpGet("user/list")]
-    public async Task<ActionResult<List<UserTableDto>?>> GetUserTables([FromQuery] GetUserTablesQuery query)
+    [HttpGet("list")]
+    public async Task<ActionResult<List<Application.Tables.Queries.GetTableList.TableDto>?>> GetUserTables()
     {
-        return await Mediator.Send(query);
+        return await Mediator.Send(new GetTableListQuery());
     }
 
-    [HttpGet()]
-    public async Task<ActionResult<TableDto?>> Get([FromQuery] GetTableQuery query)
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Application.Tables.Queries.GetTable.TableDto?>> Get(Guid id)
     {
-        return await Mediator.Send(query);
+        return await Mediator.Send(new GetTableQuery { TableId = id });
     }
 
     [HttpPost]
@@ -27,22 +29,8 @@ public class TableController : ApiControllerBase
         return await Mediator.Send(command);
     }
 
-    /*
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(int id, UpdateTodoItemCommand command)
-    {
-        if (id != command.Id)
-        {
-            return BadRequest();
-        }
-
-        await Mediator.Send(command);
-
-        return NoContent();
-    }
-
-    [HttpPut("[action]")]
-    public async Task<ActionResult> UpdateItemDetails(int id, UpdateTodoItemDetailCommand command)
+    public async Task<ActionResult> Update(Guid id, UpdateTableCommand command)
     {
         if (id != command.Id)
         {
@@ -55,10 +43,10 @@ public class TableController : ApiControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(int id)
+    public async Task<ActionResult> Delete(Guid id)
     {
-        await Mediator.Send(new DeleteTodoItemCommand { Id = id });
+        await Mediator.Send(new DeleteTableCommand { Id = id });
 
         return NoContent();
-    }*/
+    }
 }

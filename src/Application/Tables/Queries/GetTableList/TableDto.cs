@@ -1,9 +1,9 @@
 ﻿using CleanArchitecture.Application.Common.Mappings;
 using CleanArchitecture.Domain.Entities;
 
-namespace CleanArchitecture.Application.Tables.Queries.GetUserTables;
+namespace CleanArchitecture.Application.Tables.Queries.GetTableList;
 
-public class UserTableDto : IMapFrom<Table>
+public class TableDto : IMapFrom<Table>
 {
     public Guid Id { get; set; }
     public string OwnerId { get; set; }

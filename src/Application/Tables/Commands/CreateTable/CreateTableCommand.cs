@@ -1,4 +1,5 @@
-﻿using CleanArchitecture.Application.Common.Interfaces;
+﻿using CleanArchitecture.Application.Common.Exceptions;
+using CleanArchitecture.Application.Common.Interfaces;
 using CleanArchitecture.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -23,11 +24,6 @@ public class CreateTableCommandHandler : IRequestHandler<CreateTableCommand, Gui
 
     public async Task<Guid> Handle(CreateTableCommand request, CancellationToken cancellationToken)
     {
-        if (_currentUserService.UserId is null)
-        {
-            throw new InvalidOperationException();
-        }
-
         var entity = new Table
         {
             OwnerId = _currentUserService.UserId,

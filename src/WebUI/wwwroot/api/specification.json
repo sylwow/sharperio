@@ -156,27 +156,12 @@
         ]
       }
     },
-    "/api/Table/user/list": {
+    "/api/Table/list": {
       "get": {
         "tags": [
           "Table"
         ],
         "operationId": "Table_GetUserTables",
-        "parameters": [
-          {
-            "name": "query",
-            "in": "query",
-            "schema": {
-              "nullable": true,
-              "oneOf": [
-                {
-                  "$ref": "#/components/schemas/GetUserTablesQuery"
-                }
-              ]
-            },
-            "x-position": 1
-          }
-        ],
         "responses": {
           "200": {
             "description": "",
@@ -185,7 +170,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/UserTableDto"
+                    "$ref": "#/components/schemas/TableDto"
                   }
                 }
               }
@@ -199,7 +184,7 @@
         ]
       }
     },
-    "/api/Table": {
+    "/api/Table/{id}": {
       "get": {
         "tags": [
           "Table"
@@ -207,8 +192,9 @@
         "operationId": "Table_Get",
         "parameters": [
           {
-            "name": "TableId",
-            "in": "query",
+            "name": "id",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "string",
               "format": "guid"
@@ -222,7 +208,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TableDto"
+                  "$ref": "#/components/schemas/TableDto2"
                 }
               }
             }
@@ -234,6 +220,92 @@
           }
         ]
       },
+      "put": {
+        "tags": [
+          "Table"
+        ],
+        "operationId": "Table_Update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTableCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Table"
+        ],
+        "operationId": "Table_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/Table": {
       "post": {
         "tags": [
           "Table"
@@ -753,7 +825,7 @@
           }
         }
       },
-      "UserTableDto": {
+      "TableDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -830,11 +902,7 @@
           }
         }
       },
-      "GetUserTablesQuery": {
-        "type": "object",
-        "additionalProperties": false
-      },
-      "TableDto": {
+      "TableDto2": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -1075,6 +1143,20 @@
         "properties": {
           "title": {
             "type": "string"
+          }
+        }
+      },
+      "UpdateTableCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
           }
         }
       },

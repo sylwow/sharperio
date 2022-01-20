@@ -1,4 +1,5 @@
-﻿using CleanArchitecture.Application.Common.Interfaces;
+﻿using CleanArchitecture.Application.Common.Exceptions;
+using CleanArchitecture.Application.Common.Interfaces;
 using CleanArchitecture.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +32,7 @@ public class CreateColumnCommandHandler : IRequestHandler<CreateColumnCommand, i
 
         if (table is null)
         {
-            throw new ArgumentException();
+            throw new NotFoundException(nameof(Table), request.TableId);
         }
 
         var entity = new Column
