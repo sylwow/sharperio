@@ -27,7 +27,7 @@ public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, int>
     public async Task<int> Handle(CreateItemCommand request, CancellationToken cancellationToken)
     {
         var column = _context.Columns
-            .Where(t => t.Id == request.ColumnId && (t.Table.OwnerId == _currentUserService.UserId || t.Table.UsersWithAccess.Contains(_currentUserService.UserId)))
+            .Where(c => c.Id == request.ColumnId && (c.Table.OwnerId == _currentUserService.UserId || c.Table.UsersWithAccess.Contains(_currentUserService.UserId)))
             .Include(t => t.Items)
             .FirstOrDefault();
 
@@ -39,6 +39,7 @@ public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, int>
         var entity = new Item
         {
             Title = request.Title,
+            Note = request.Note,
             Order = column.Items.Count(),
         };
 

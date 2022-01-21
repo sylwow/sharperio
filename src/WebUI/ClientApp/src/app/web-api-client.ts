@@ -15,8 +15,11 @@ import { HttpClient, HttpHeaders, HttpResponse, HttpResponseBase } from '@angula
 export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL');
 
 export interface IColumnClient {
-    createPOST(tableId: string, command: CreateColumnCommand): Observable<number>;
-    createPATCH(id: number, command: UpdateColumnOrderCommand): Observable<FileResponse>;
+    get(id: number): Observable<ColumnDto>;
+    update(id: number, command: UpdateColumnCommand): Observable<FileResponse>;
+    delete(id: number): Observable<FileResponse>;
+    create(command: CreateColumnCommand): Observable<number>;
+    updateOrder(id: number, command: UpdateColumnOrderCommand): Observable<FileResponse>;
 }
 
 @Injectable({
@@ -32,40 +35,36 @@ export class ColumnClient implements IColumnClient {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
-    createPOST(tableId: string, command: CreateColumnCommand) : Observable<number> {
-        let url_ = this.baseUrl + "/api/Column/{TableId}";
-        if (tableId === undefined || tableId === null)
-            throw new Error("The parameter 'tableId' must be defined.");
-        url_ = url_.replace("{tableId}", encodeURIComponent("" + tableId));
+    get(id: number) : Observable<ColumnDto> {
+        let url_ = this.baseUrl + "/api/Column/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(command);
-
         let options_ : any = {
-            body: content_,
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Content-Type": "application/json",
                 "Accept": "application/json"
             })
         };
 
-        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processCreatePOST(response_);
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGet(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processCreatePOST(<any>response_);
+                    return this.processGet(<any>response_);
                 } catch (e) {
-                    return <Observable<number>><any>_observableThrow(e);
+                    return <Observable<ColumnDto>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<number>><any>_observableThrow(response_);
+                return <Observable<ColumnDto>><any>_observableThrow(response_);
         }));
     }
 
-    protected processCreatePOST(response: HttpResponseBase): Observable<number> {
+    protected processGet(response: HttpResponseBase): Observable<ColumnDto> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -76,7 +75,7 @@ export class ColumnClient implements IColumnClient {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = resultData200 !== undefined ? resultData200 : <any>null;
+            result200 = ColumnDto.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -84,11 +83,11 @@ export class ColumnClient implements IColumnClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<number>(<any>null);
+        return _observableOf<ColumnDto>(<any>null);
     }
 
-    createPATCH(id: number, command: UpdateColumnOrderCommand) : Observable<FileResponse> {
-        let url_ = this.baseUrl + "/api/Column/{id}/order";
+    update(id: number, command: UpdateColumnCommand) : Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/Column/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
@@ -106,12 +105,12 @@ export class ColumnClient implements IColumnClient {
             })
         };
 
-        return this.http.request("patch", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processCreatePATCH(response_);
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdate(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processCreatePATCH(<any>response_);
+                    return this.processUpdate(<any>response_);
                 } catch (e) {
                     return <Observable<FileResponse>><any>_observableThrow(e);
                 }
@@ -120,7 +119,7 @@ export class ColumnClient implements IColumnClient {
         }));
     }
 
-    protected processCreatePATCH(response: HttpResponseBase): Observable<FileResponse> {
+    protected processUpdate(response: HttpResponseBase): Observable<FileResponse> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -139,30 +138,58 @@ export class ColumnClient implements IColumnClient {
         }
         return _observableOf<FileResponse>(<any>null);
     }
-}
 
-export interface IItemClient {
-    create(columnId: number, command: CreateItemCommand): Observable<number>;
-}
+    delete(id: number) : Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/Column/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
 
-@Injectable({
-    providedIn: 'root'
-})
-export class ItemClient implements IItemClient {
-    private http: HttpClient;
-    private baseUrl: string;
-    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
+            })
+        };
 
-    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
-        this.http = http;
-        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDelete(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDelete(<any>response_);
+                } catch (e) {
+                    return <Observable<FileResponse>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<FileResponse>><any>_observableThrow(response_);
+        }));
     }
 
-    create(columnId: number, command: CreateItemCommand) : Observable<number> {
-        let url_ = this.baseUrl + "/api/Item/{ColumnId}";
-        if (columnId === undefined || columnId === null)
-            throw new Error("The parameter 'columnId' must be defined.");
-        url_ = url_.replace("{columnId}", encodeURIComponent("" + columnId));
+    protected processDelete(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<FileResponse>(<any>null);
+    }
+
+    create(command: CreateColumnCommand) : Observable<number> {
+        let url_ = this.baseUrl + "/api/Column";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(command);
@@ -212,14 +239,294 @@ export class ItemClient implements IItemClient {
         }
         return _observableOf<number>(<any>null);
     }
+
+    updateOrder(id: number, command: UpdateColumnOrderCommand) : Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/Column/{id}/order";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("patch", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdateOrder(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdateOrder(<any>response_);
+                } catch (e) {
+                    return <Observable<FileResponse>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<FileResponse>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processUpdateOrder(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<FileResponse>(<any>null);
+    }
+}
+
+export interface IItemClient {
+    get(id: number | undefined): Observable<ItemDto2>;
+    create(command: CreateItemCommand): Observable<number>;
+    update(id: number, command: UpdateItemCommand): Observable<FileResponse>;
+    delete(id: number): Observable<FileResponse>;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class ItemClient implements IItemClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    get(id: number | undefined) : Observable<ItemDto2> {
+        let url_ = this.baseUrl + "/api/Item/id?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGet(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGet(<any>response_);
+                } catch (e) {
+                    return <Observable<ItemDto2>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<ItemDto2>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGet(response: HttpResponseBase): Observable<ItemDto2> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ItemDto2.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<ItemDto2>(<any>null);
+    }
+
+    create(command: CreateItemCommand) : Observable<number> {
+        let url_ = this.baseUrl + "/api/Item";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreate(<any>response_);
+                } catch (e) {
+                    return <Observable<number>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<number>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processCreate(response: HttpResponseBase): Observable<number> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 !== undefined ? resultData200 : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<number>(<any>null);
+    }
+
+    update(id: number, command: UpdateItemCommand) : Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/Item/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdate(<any>response_);
+                } catch (e) {
+                    return <Observable<FileResponse>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<FileResponse>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processUpdate(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<FileResponse>(<any>null);
+    }
+
+    delete(id: number) : Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/Item/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDelete(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDelete(<any>response_);
+                } catch (e) {
+                    return <Observable<FileResponse>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<FileResponse>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processDelete(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<FileResponse>(<any>null);
+    }
 }
 
 export interface ITableClient {
-    getUserTables(): Observable<TableDto[]>;
+    getList(): Observable<TableDto[]>;
+    create(command: CreateTableCommand): Observable<string>;
     get(id: string): Observable<TableDto2>;
     update(id: string, command: UpdateTableCommand): Observable<FileResponse>;
     delete(id: string): Observable<FileResponse>;
-    create(command: CreateTableCommand): Observable<string>;
 }
 
 @Injectable({
@@ -235,8 +542,8 @@ export class TableClient implements ITableClient {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
-    getUserTables() : Observable<TableDto[]> {
-        let url_ = this.baseUrl + "/api/Table/list";
+    getList() : Observable<TableDto[]> {
+        let url_ = this.baseUrl + "/api/Table";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -248,11 +555,11 @@ export class TableClient implements ITableClient {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetUserTables(response_);
+            return this.processGetList(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processGetUserTables(<any>response_);
+                    return this.processGetList(<any>response_);
                 } catch (e) {
                     return <Observable<TableDto[]>><any>_observableThrow(e);
                 }
@@ -261,7 +568,7 @@ export class TableClient implements ITableClient {
         }));
     }
 
-    protected processGetUserTables(response: HttpResponseBase): Observable<TableDto[]> {
+    protected processGetList(response: HttpResponseBase): Observable<TableDto[]> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -288,6 +595,58 @@ export class TableClient implements ITableClient {
             }));
         }
         return _observableOf<TableDto[]>(<any>null);
+    }
+
+    create(command: CreateTableCommand) : Observable<string> {
+        let url_ = this.baseUrl + "/api/Table";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreate(<any>response_);
+                } catch (e) {
+                    return <Observable<string>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<string>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processCreate(response: HttpResponseBase): Observable<string> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 !== undefined ? resultData200 : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<string>(<any>null);
     }
 
     get(id: string) : Observable<TableDto2> {
@@ -441,58 +800,6 @@ export class TableClient implements ITableClient {
             }));
         }
         return _observableOf<FileResponse>(<any>null);
-    }
-
-    create(command: CreateTableCommand) : Observable<string> {
-        let url_ = this.baseUrl + "/api/Table";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(command);
-
-        let options_ : any = {
-            body: content_,
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processCreate(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processCreate(<any>response_);
-                } catch (e) {
-                    return <Observable<string>><any>_observableThrow(e);
-                }
-            } else
-                return <Observable<string>><any>_observableThrow(response_);
-        }));
-    }
-
-    protected processCreate(response: HttpResponseBase): Observable<string> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = resultData200 !== undefined ? resultData200 : <any>null;
-            return _observableOf(result200);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf<string>(<any>null);
     }
 }
 
@@ -1132,51 +1439,14 @@ export class WeatherForecastClient implements IWeatherForecastClient {
     }
 }
 
-export class CreateColumnCommand implements ICreateColumnCommand {
-    tableId?: string;
-    title?: string;
-
-    constructor(data?: ICreateColumnCommand) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.tableId = _data["tableId"];
-            this.title = _data["title"];
-        }
-    }
-
-    static fromJS(data: any): CreateColumnCommand {
-        data = typeof data === 'object' ? data : {};
-        let result = new CreateColumnCommand();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["tableId"] = this.tableId;
-        data["title"] = this.title;
-        return data; 
-    }
-}
-
-export interface ICreateColumnCommand {
-    tableId?: string;
-    title?: string;
-}
-
-export class UpdateColumnOrderCommand implements IUpdateColumnOrderCommand {
+export class ColumnDto implements IColumnDto {
     id?: number;
+    title?: string;
+    isArhived?: boolean;
     order?: number;
+    items?: ItemDto[];
 
-    constructor(data?: IUpdateColumnOrderCommand) {
+    constructor(data?: IColumnDto) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1188,13 +1458,20 @@ export class UpdateColumnOrderCommand implements IUpdateColumnOrderCommand {
     init(_data?: any) {
         if (_data) {
             this.id = _data["id"];
+            this.title = _data["title"];
+            this.isArhived = _data["isArhived"];
             this.order = _data["order"];
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items!.push(ItemDto.fromJS(item));
+            }
         }
     }
 
-    static fromJS(data: any): UpdateColumnOrderCommand {
+    static fromJS(data: any): ColumnDto {
         data = typeof data === 'object' ? data : {};
-        let result = new UpdateColumnOrderCommand();
+        let result = new ColumnDto();
         result.init(data);
         return result;
     }
@@ -1202,22 +1479,35 @@ export class UpdateColumnOrderCommand implements IUpdateColumnOrderCommand {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
+        data["title"] = this.title;
+        data["isArhived"] = this.isArhived;
         data["order"] = this.order;
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item.toJSON());
+        }
         return data; 
     }
 }
 
-export interface IUpdateColumnOrderCommand {
+export interface IColumnDto {
     id?: number;
+    title?: string;
+    isArhived?: boolean;
     order?: number;
+    items?: ItemDto[];
 }
 
-export class CreateItemCommand implements ICreateItemCommand {
-    columnId?: number;
+export class ItemDto implements IItemDto {
+    id?: number;
     title?: string;
     note?: string;
+    cover?: Cover;
+    labels?: Label[];
+    comments?: Comment[];
 
-    constructor(data?: ICreateItemCommand) {
+    constructor(data?: IItemDto) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1228,63 +1518,26 @@ export class CreateItemCommand implements ICreateItemCommand {
 
     init(_data?: any) {
         if (_data) {
-            this.columnId = _data["columnId"];
+            this.id = _data["id"];
             this.title = _data["title"];
             this.note = _data["note"];
-        }
-    }
-
-    static fromJS(data: any): CreateItemCommand {
-        data = typeof data === 'object' ? data : {};
-        let result = new CreateItemCommand();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["columnId"] = this.columnId;
-        data["title"] = this.title;
-        data["note"] = this.note;
-        return data; 
-    }
-}
-
-export interface ICreateItemCommand {
-    columnId?: number;
-    title?: string;
-    note?: string;
-}
-
-export class TableDto implements ITableDto {
-    id?: string;
-    ownerId?: string;
-    title?: string;
-    cover?: Cover | undefined;
-    isPrivate?: boolean;
-
-    constructor(data?: ITableDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
+            this.cover = _data["cover"] ? Cover.fromJS(_data["cover"]) : <any>undefined;
+            if (Array.isArray(_data["labels"])) {
+                this.labels = [] as any;
+                for (let item of _data["labels"])
+                    this.labels!.push(Label.fromJS(item));
+            }
+            if (Array.isArray(_data["comments"])) {
+                this.comments = [] as any;
+                for (let item of _data["comments"])
+                    this.comments!.push(Comment.fromJS(item));
             }
         }
     }
 
-    init(_data?: any) {
-        if (_data) {
-            this.id = _data["id"];
-            this.ownerId = _data["ownerId"];
-            this.title = _data["title"];
-            this.cover = _data["cover"] ? Cover.fromJS(_data["cover"]) : <any>undefined;
-            this.isPrivate = _data["isPrivate"];
-        }
-    }
-
-    static fromJS(data: any): TableDto {
+    static fromJS(data: any): ItemDto {
         data = typeof data === 'object' ? data : {};
-        let result = new TableDto();
+        let result = new ItemDto();
         result.init(data);
         return result;
     }
@@ -1292,20 +1545,30 @@ export class TableDto implements ITableDto {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
-        data["ownerId"] = this.ownerId;
         data["title"] = this.title;
+        data["note"] = this.note;
         data["cover"] = this.cover ? this.cover.toJSON() : <any>undefined;
-        data["isPrivate"] = this.isPrivate;
+        if (Array.isArray(this.labels)) {
+            data["labels"] = [];
+            for (let item of this.labels)
+                data["labels"].push(item.toJSON());
+        }
+        if (Array.isArray(this.comments)) {
+            data["comments"] = [];
+            for (let item of this.comments)
+                data["comments"].push(item.toJSON());
+        }
         return data; 
     }
 }
 
-export interface ITableDto {
-    id?: string;
-    ownerId?: string;
+export interface IItemDto {
+    id?: number;
     title?: string;
-    cover?: Cover | undefined;
-    isPrivate?: boolean;
+    note?: string;
+    cover?: Cover;
+    labels?: Label[];
+    comments?: Comment[];
 }
 
 export abstract class AuditableEntity implements IAuditableEntity {
@@ -1399,353 +1662,6 @@ export interface ICover extends IAuditableEntity {
     imageUrl?: string;
 }
 
-export class TableDto2 implements ITableDto2 {
-    id?: string;
-    ownerId?: string;
-    title?: string;
-    cover?: Cover | undefined;
-    isPrivate?: boolean;
-    columns?: ColumnDto[];
-    usersWithAccess?: string[];
-
-    constructor(data?: ITableDto2) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.id = _data["id"];
-            this.ownerId = _data["ownerId"];
-            this.title = _data["title"];
-            this.cover = _data["cover"] ? Cover.fromJS(_data["cover"]) : <any>undefined;
-            this.isPrivate = _data["isPrivate"];
-            if (Array.isArray(_data["columns"])) {
-                this.columns = [] as any;
-                for (let item of _data["columns"])
-                    this.columns!.push(ColumnDto.fromJS(item));
-            }
-            if (Array.isArray(_data["usersWithAccess"])) {
-                this.usersWithAccess = [] as any;
-                for (let item of _data["usersWithAccess"])
-                    this.usersWithAccess!.push(item);
-            }
-        }
-    }
-
-    static fromJS(data: any): TableDto2 {
-        data = typeof data === 'object' ? data : {};
-        let result = new TableDto2();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["ownerId"] = this.ownerId;
-        data["title"] = this.title;
-        data["cover"] = this.cover ? this.cover.toJSON() : <any>undefined;
-        data["isPrivate"] = this.isPrivate;
-        if (Array.isArray(this.columns)) {
-            data["columns"] = [];
-            for (let item of this.columns)
-                data["columns"].push(item.toJSON());
-        }
-        if (Array.isArray(this.usersWithAccess)) {
-            data["usersWithAccess"] = [];
-            for (let item of this.usersWithAccess)
-                data["usersWithAccess"].push(item);
-        }
-        return data; 
-    }
-}
-
-export interface ITableDto2 {
-    id?: string;
-    ownerId?: string;
-    title?: string;
-    cover?: Cover | undefined;
-    isPrivate?: boolean;
-    columns?: ColumnDto[];
-    usersWithAccess?: string[];
-}
-
-export class ColumnDto implements IColumnDto {
-    id?: number;
-    title?: string;
-    isArhived?: boolean;
-    order?: number;
-    items?: Item[];
-
-    constructor(data?: IColumnDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.id = _data["id"];
-            this.title = _data["title"];
-            this.isArhived = _data["isArhived"];
-            this.order = _data["order"];
-            if (Array.isArray(_data["items"])) {
-                this.items = [] as any;
-                for (let item of _data["items"])
-                    this.items!.push(Item.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): ColumnDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new ColumnDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["title"] = this.title;
-        data["isArhived"] = this.isArhived;
-        data["order"] = this.order;
-        if (Array.isArray(this.items)) {
-            data["items"] = [];
-            for (let item of this.items)
-                data["items"].push(item.toJSON());
-        }
-        return data; 
-    }
-}
-
-export interface IColumnDto {
-    id?: number;
-    title?: string;
-    isArhived?: boolean;
-    order?: number;
-    items?: Item[];
-}
-
-export class Item extends AuditableEntity implements IItem {
-    id?: number;
-    title?: string;
-    note?: string;
-    order?: number;
-    cover?: Cover;
-    column?: Column;
-    labels?: Label[];
-    comments?: Comment[];
-
-    constructor(data?: IItem) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.id = _data["id"];
-            this.title = _data["title"];
-            this.note = _data["note"];
-            this.order = _data["order"];
-            this.cover = _data["cover"] ? Cover.fromJS(_data["cover"]) : <any>undefined;
-            this.column = _data["column"] ? Column.fromJS(_data["column"]) : <any>undefined;
-            if (Array.isArray(_data["labels"])) {
-                this.labels = [] as any;
-                for (let item of _data["labels"])
-                    this.labels!.push(Label.fromJS(item));
-            }
-            if (Array.isArray(_data["comments"])) {
-                this.comments = [] as any;
-                for (let item of _data["comments"])
-                    this.comments!.push(Comment.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): Item {
-        data = typeof data === 'object' ? data : {};
-        let result = new Item();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["title"] = this.title;
-        data["note"] = this.note;
-        data["order"] = this.order;
-        data["cover"] = this.cover ? this.cover.toJSON() : <any>undefined;
-        data["column"] = this.column ? this.column.toJSON() : <any>undefined;
-        if (Array.isArray(this.labels)) {
-            data["labels"] = [];
-            for (let item of this.labels)
-                data["labels"].push(item.toJSON());
-        }
-        if (Array.isArray(this.comments)) {
-            data["comments"] = [];
-            for (let item of this.comments)
-                data["comments"].push(item.toJSON());
-        }
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IItem extends IAuditableEntity {
-    id?: number;
-    title?: string;
-    note?: string;
-    order?: number;
-    cover?: Cover;
-    column?: Column;
-    labels?: Label[];
-    comments?: Comment[];
-}
-
-export class Column extends AuditableEntity implements IColumn {
-    id?: number;
-    title?: string;
-    isArhived?: boolean;
-    order?: number;
-    items?: Item[];
-    table?: Table;
-
-    constructor(data?: IColumn) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.id = _data["id"];
-            this.title = _data["title"];
-            this.isArhived = _data["isArhived"];
-            this.order = _data["order"];
-            if (Array.isArray(_data["items"])) {
-                this.items = [] as any;
-                for (let item of _data["items"])
-                    this.items!.push(Item.fromJS(item));
-            }
-            this.table = _data["table"] ? Table.fromJS(_data["table"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): Column {
-        data = typeof data === 'object' ? data : {};
-        let result = new Column();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["title"] = this.title;
-        data["isArhived"] = this.isArhived;
-        data["order"] = this.order;
-        if (Array.isArray(this.items)) {
-            data["items"] = [];
-            for (let item of this.items)
-                data["items"].push(item.toJSON());
-        }
-        data["table"] = this.table ? this.table.toJSON() : <any>undefined;
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IColumn extends IAuditableEntity {
-    id?: number;
-    title?: string;
-    isArhived?: boolean;
-    order?: number;
-    items?: Item[];
-    table?: Table;
-}
-
-export class Table extends AuditableEntity implements ITable {
-    id?: string;
-    ownerId?: string;
-    title?: string;
-    cover?: Cover | undefined;
-    isPrivate?: boolean;
-    columns?: Column[];
-    usersWithAccess?: string[];
-
-    constructor(data?: ITable) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.id = _data["id"];
-            this.ownerId = _data["ownerId"];
-            this.title = _data["title"];
-            this.cover = _data["cover"] ? Cover.fromJS(_data["cover"]) : <any>undefined;
-            this.isPrivate = _data["isPrivate"];
-            if (Array.isArray(_data["columns"])) {
-                this.columns = [] as any;
-                for (let item of _data["columns"])
-                    this.columns!.push(Column.fromJS(item));
-            }
-            if (Array.isArray(_data["usersWithAccess"])) {
-                this.usersWithAccess = [] as any;
-                for (let item of _data["usersWithAccess"])
-                    this.usersWithAccess!.push(item);
-            }
-        }
-    }
-
-    static fromJS(data: any): Table {
-        data = typeof data === 'object' ? data : {};
-        let result = new Table();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["ownerId"] = this.ownerId;
-        data["title"] = this.title;
-        data["cover"] = this.cover ? this.cover.toJSON() : <any>undefined;
-        data["isPrivate"] = this.isPrivate;
-        if (Array.isArray(this.columns)) {
-            data["columns"] = [];
-            for (let item of this.columns)
-                data["columns"].push(item.toJSON());
-        }
-        if (Array.isArray(this.usersWithAccess)) {
-            data["usersWithAccess"] = [];
-            for (let item of this.usersWithAccess)
-                data["usersWithAccess"].push(item);
-        }
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface ITable extends IAuditableEntity {
-    id?: string;
-    ownerId?: string;
-    title?: string;
-    cover?: Cover | undefined;
-    isPrivate?: boolean;
-    columns?: Column[];
-    usersWithAccess?: string[];
-}
-
 export class Label extends AuditableEntity implements ILabel {
     id?: number;
     title?: string;
@@ -1822,6 +1738,542 @@ export class Comment extends AuditableEntity implements IComment {
 export interface IComment extends IAuditableEntity {
     id?: number;
     text?: string;
+}
+
+export class CreateColumnCommand implements ICreateColumnCommand {
+    tableId?: string;
+    title?: string;
+
+    constructor(data?: ICreateColumnCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.tableId = _data["tableId"];
+            this.title = _data["title"];
+        }
+    }
+
+    static fromJS(data: any): CreateColumnCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateColumnCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["tableId"] = this.tableId;
+        data["title"] = this.title;
+        return data; 
+    }
+}
+
+export interface ICreateColumnCommand {
+    tableId?: string;
+    title?: string;
+}
+
+export class UpdateColumnCommand implements IUpdateColumnCommand {
+    id?: number;
+    title?: string | undefined;
+
+    constructor(data?: IUpdateColumnCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.title = _data["title"];
+        }
+    }
+
+    static fromJS(data: any): UpdateColumnCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateColumnCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["title"] = this.title;
+        return data; 
+    }
+}
+
+export interface IUpdateColumnCommand {
+    id?: number;
+    title?: string | undefined;
+}
+
+export class UpdateColumnOrderCommand implements IUpdateColumnOrderCommand {
+    id?: number;
+    order?: number;
+
+    constructor(data?: IUpdateColumnOrderCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.order = _data["order"];
+        }
+    }
+
+    static fromJS(data: any): UpdateColumnOrderCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateColumnOrderCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["order"] = this.order;
+        return data; 
+    }
+}
+
+export interface IUpdateColumnOrderCommand {
+    id?: number;
+    order?: number;
+}
+
+export class ItemDto2 implements IItemDto2 {
+    id?: number;
+    title?: string;
+    note?: string;
+    cover?: Cover;
+    labels?: Label[];
+    comments?: Comment[];
+
+    constructor(data?: IItemDto2) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.title = _data["title"];
+            this.note = _data["note"];
+            this.cover = _data["cover"] ? Cover.fromJS(_data["cover"]) : <any>undefined;
+            if (Array.isArray(_data["labels"])) {
+                this.labels = [] as any;
+                for (let item of _data["labels"])
+                    this.labels!.push(Label.fromJS(item));
+            }
+            if (Array.isArray(_data["comments"])) {
+                this.comments = [] as any;
+                for (let item of _data["comments"])
+                    this.comments!.push(Comment.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): ItemDto2 {
+        data = typeof data === 'object' ? data : {};
+        let result = new ItemDto2();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["title"] = this.title;
+        data["note"] = this.note;
+        data["cover"] = this.cover ? this.cover.toJSON() : <any>undefined;
+        if (Array.isArray(this.labels)) {
+            data["labels"] = [];
+            for (let item of this.labels)
+                data["labels"].push(item.toJSON());
+        }
+        if (Array.isArray(this.comments)) {
+            data["comments"] = [];
+            for (let item of this.comments)
+                data["comments"].push(item.toJSON());
+        }
+        return data; 
+    }
+}
+
+export interface IItemDto2 {
+    id?: number;
+    title?: string;
+    note?: string;
+    cover?: Cover;
+    labels?: Label[];
+    comments?: Comment[];
+}
+
+export class CreateItemCommand implements ICreateItemCommand {
+    columnId?: number;
+    title?: string;
+    note?: string;
+
+    constructor(data?: ICreateItemCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.columnId = _data["columnId"];
+            this.title = _data["title"];
+            this.note = _data["note"];
+        }
+    }
+
+    static fromJS(data: any): CreateItemCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateItemCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["columnId"] = this.columnId;
+        data["title"] = this.title;
+        data["note"] = this.note;
+        return data; 
+    }
+}
+
+export interface ICreateItemCommand {
+    columnId?: number;
+    title?: string;
+    note?: string;
+}
+
+export class UpdateItemCommand implements IUpdateItemCommand {
+    id?: number;
+    title?: string;
+
+    constructor(data?: IUpdateItemCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.title = _data["title"];
+        }
+    }
+
+    static fromJS(data: any): UpdateItemCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateItemCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["title"] = this.title;
+        return data; 
+    }
+}
+
+export interface IUpdateItemCommand {
+    id?: number;
+    title?: string;
+}
+
+export class TableDto implements ITableDto {
+    id?: string;
+    ownerId?: string;
+    title?: string;
+    cover?: Cover | undefined;
+    isPrivate?: boolean;
+
+    constructor(data?: ITableDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.ownerId = _data["ownerId"];
+            this.title = _data["title"];
+            this.cover = _data["cover"] ? Cover.fromJS(_data["cover"]) : <any>undefined;
+            this.isPrivate = _data["isPrivate"];
+        }
+    }
+
+    static fromJS(data: any): TableDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new TableDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["ownerId"] = this.ownerId;
+        data["title"] = this.title;
+        data["cover"] = this.cover ? this.cover.toJSON() : <any>undefined;
+        data["isPrivate"] = this.isPrivate;
+        return data; 
+    }
+}
+
+export interface ITableDto {
+    id?: string;
+    ownerId?: string;
+    title?: string;
+    cover?: Cover | undefined;
+    isPrivate?: boolean;
+}
+
+export class TableDto2 implements ITableDto2 {
+    id?: string;
+    ownerId?: string;
+    title?: string;
+    cover?: Cover | undefined;
+    isPrivate?: boolean;
+    columns?: ColumnDto2[];
+    usersWithAccess?: string[];
+
+    constructor(data?: ITableDto2) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.ownerId = _data["ownerId"];
+            this.title = _data["title"];
+            this.cover = _data["cover"] ? Cover.fromJS(_data["cover"]) : <any>undefined;
+            this.isPrivate = _data["isPrivate"];
+            if (Array.isArray(_data["columns"])) {
+                this.columns = [] as any;
+                for (let item of _data["columns"])
+                    this.columns!.push(ColumnDto2.fromJS(item));
+            }
+            if (Array.isArray(_data["usersWithAccess"])) {
+                this.usersWithAccess = [] as any;
+                for (let item of _data["usersWithAccess"])
+                    this.usersWithAccess!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): TableDto2 {
+        data = typeof data === 'object' ? data : {};
+        let result = new TableDto2();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["ownerId"] = this.ownerId;
+        data["title"] = this.title;
+        data["cover"] = this.cover ? this.cover.toJSON() : <any>undefined;
+        data["isPrivate"] = this.isPrivate;
+        if (Array.isArray(this.columns)) {
+            data["columns"] = [];
+            for (let item of this.columns)
+                data["columns"].push(item.toJSON());
+        }
+        if (Array.isArray(this.usersWithAccess)) {
+            data["usersWithAccess"] = [];
+            for (let item of this.usersWithAccess)
+                data["usersWithAccess"].push(item);
+        }
+        return data; 
+    }
+}
+
+export interface ITableDto2 {
+    id?: string;
+    ownerId?: string;
+    title?: string;
+    cover?: Cover | undefined;
+    isPrivate?: boolean;
+    columns?: ColumnDto2[];
+    usersWithAccess?: string[];
+}
+
+export class ColumnDto2 implements IColumnDto2 {
+    id?: number;
+    title?: string;
+    isArhived?: boolean;
+    order?: number;
+    items?: ItemDto3[];
+
+    constructor(data?: IColumnDto2) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.title = _data["title"];
+            this.isArhived = _data["isArhived"];
+            this.order = _data["order"];
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items!.push(ItemDto3.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): ColumnDto2 {
+        data = typeof data === 'object' ? data : {};
+        let result = new ColumnDto2();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["title"] = this.title;
+        data["isArhived"] = this.isArhived;
+        data["order"] = this.order;
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item.toJSON());
+        }
+        return data; 
+    }
+}
+
+export interface IColumnDto2 {
+    id?: number;
+    title?: string;
+    isArhived?: boolean;
+    order?: number;
+    items?: ItemDto3[];
+}
+
+export class ItemDto3 implements IItemDto3 {
+    id?: number;
+    title?: string;
+    note?: string;
+    cover?: Cover;
+    labels?: Label[];
+    comments?: Comment[];
+
+    constructor(data?: IItemDto3) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.title = _data["title"];
+            this.note = _data["note"];
+            this.cover = _data["cover"] ? Cover.fromJS(_data["cover"]) : <any>undefined;
+            if (Array.isArray(_data["labels"])) {
+                this.labels = [] as any;
+                for (let item of _data["labels"])
+                    this.labels!.push(Label.fromJS(item));
+            }
+            if (Array.isArray(_data["comments"])) {
+                this.comments = [] as any;
+                for (let item of _data["comments"])
+                    this.comments!.push(Comment.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): ItemDto3 {
+        data = typeof data === 'object' ? data : {};
+        let result = new ItemDto3();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["title"] = this.title;
+        data["note"] = this.note;
+        data["cover"] = this.cover ? this.cover.toJSON() : <any>undefined;
+        if (Array.isArray(this.labels)) {
+            data["labels"] = [];
+            for (let item of this.labels)
+                data["labels"].push(item.toJSON());
+        }
+        if (Array.isArray(this.comments)) {
+            data["comments"] = [];
+            for (let item of this.comments)
+                data["comments"].push(item.toJSON());
+        }
+        return data; 
+    }
+}
+
+export interface IItemDto3 {
+    id?: number;
+    title?: string;
+    note?: string;
+    cover?: Cover;
+    labels?: Label[];
+    comments?: Comment[];
 }
 
 export class CreateTableCommand implements ICreateTableCommand {

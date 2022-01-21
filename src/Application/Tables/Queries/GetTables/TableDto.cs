@@ -1,7 +1,7 @@
 ﻿using CleanArchitecture.Application.Common.Mappings;
 using CleanArchitecture.Domain.Entities;
 
-namespace CleanArchitecture.Application.Tables.Queries.GetTableList;
+namespace CleanArchitecture.Application.Tables.Queries.GetTables;
 
 public class TableDto : IMapFrom<Table>
 {

@@ -2,7 +2,7 @@
 using CleanArchitecture.Application.Tables.Commands.DeleteTable;
 using CleanArchitecture.Application.Tables.Commands.UpdateTable;
 using CleanArchitecture.Application.Tables.Queries.GetTable;
-using CleanArchitecture.Application.Tables.Queries.GetTableList;
+using CleanArchitecture.Application.Tables.Queries.GetTables;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TableDto = CleanArchitecture.Application.Tables.Queries.GetTable.TableDto;
@@ -12,10 +12,10 @@ namespace CleanArchitecture.WebUI.Controllers;
 [Authorize]
 public class TableController : ApiControllerBase
 {
-    [HttpGet("list")]
-    public async Task<ActionResult<TableDtoList>> GetList()
+    [HttpGet()]
+    public async Task<ActionResult<TablesDto>> GetList()
     {
-        return await Mediator.Send(new GetTableListQuery());
+        return await Mediator.Send(new GetTablesQuery());
     }
 
     [HttpGet("{id}")]
@@ -24,7 +24,7 @@ public class TableController : ApiControllerBase
         return await Mediator.Send(new GetTableQuery { Id = id });
     }
 
-    [HttpPost]
+    [HttpPost()]
     public async Task<ActionResult<Guid>> Create(CreateTableCommand command)
     {
         return await Mediator.Send(command);
