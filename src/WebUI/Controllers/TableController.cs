@@ -5,6 +5,7 @@ using CleanArchitecture.Application.Tables.Queries.GetTable;
 using CleanArchitecture.Application.Tables.Queries.GetTableList;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TableDto = CleanArchitecture.Application.Tables.Queries.GetTable.TableDto;
 
 namespace CleanArchitecture.WebUI.Controllers;
 
@@ -12,15 +13,15 @@ namespace CleanArchitecture.WebUI.Controllers;
 public class TableController : ApiControllerBase
 {
     [HttpGet("list")]
-    public async Task<ActionResult<List<Application.Tables.Queries.GetTableList.TableDto>?>> GetUserTables()
+    public async Task<ActionResult<TableDtoList>> GetList()
     {
         return await Mediator.Send(new GetTableListQuery());
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Application.Tables.Queries.GetTable.TableDto?>> Get(Guid id)
+    public async Task<ActionResult<TableDto>> Get(Guid id)
     {
-        return await Mediator.Send(new GetTableQuery { TableId = id });
+        return await Mediator.Send(new GetTableQuery { Id = id });
     }
 
     [HttpPost]

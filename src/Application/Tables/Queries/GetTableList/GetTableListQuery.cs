@@ -1,17 +1,19 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using CleanArchitecture.Application.Common.Exceptions;
 using CleanArchitecture.Application.Common.Interfaces;
 using CleanArchitecture.Application.Tables.Queries.GetTableList;
+using CleanArchitecture.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace CleanArchitecture.Application.Tables.Queries.GetTableList;
 
-public class GetTableListQuery : IRequest<TableDtoList?>
+public class GetTableListQuery : IRequest<TableDtoList>
 {
 }
 
-public class GetTableListQueryHandler : IRequestHandler<GetTableListQuery, TableDtoList?>
+public class GetTableListQueryHandler : IRequestHandler<GetTableListQuery, TableDtoList>
 {
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
@@ -24,12 +26,17 @@ public class GetTableListQueryHandler : IRequestHandler<GetTableListQuery, Table
         _currentUserService = currentUserService;
     }
 
-    public async Task<TableDtoList?> Handle(GetTableListQuery request, CancellationToken cancellationToken)
+    public async Task<TableDtoList> Handle(GetTableListQuery request, CancellationToken cancellationToken)
     {
         var tables =  await _context.Tables
             .Where(u => u.OwnerId == _currentUserService.UserId || u.UsersWithAccess.Contains(_currentUserService.UserId))
             .ToListAsync(cancellationToken);
 
-        return _mapper.Map<TableDtoList?>(tables);
+        if (tables is null)
+        {
+            throw new NotFoundException(nameof(Table), _currentUserService.UserId);
+        }
+
+        return _mapper.Map<TableDtoList>(tables);
     }
 }

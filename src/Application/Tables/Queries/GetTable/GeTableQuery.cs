@@ -1,16 +1,18 @@
 ﻿using AutoMapper;
+using CleanArchitecture.Application.Common.Exceptions;
 using CleanArchitecture.Application.Common.Interfaces;
+using CleanArchitecture.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace CleanArchitecture.Application.Tables.Queries.GetTable;
 
-public class GetTableQuery : IRequest<TableDto?>
+public class GetTableQuery : IRequest<TableDto>
 {
-    public Guid TableId { get; set; }
+    public Guid Id { get; set; }
 }
 
-public class GetTableQueryHandler : IRequestHandler<GetTableQuery, TableDto?>
+public class GetTableQueryHandler : IRequestHandler<GetTableQuery, TableDto>
 {
     private readonly IApplicationDbContext _context;
     private readonly IMapper _mapper;
@@ -23,14 +25,19 @@ public class GetTableQueryHandler : IRequestHandler<GetTableQuery, TableDto?>
         _currentUserService = currentUserService;
     }
 
-    public async Task<TableDto?> Handle(GetTableQuery request, CancellationToken cancellationToken)
+    public async Task<TableDto> Handle(GetTableQuery request, CancellationToken cancellationToken)
     {
-        var tables = await _context.Tables
-            .Where(t => t.Id == request.TableId && (t.OwnerId == _currentUserService.UserId || t.UsersWithAccess.Contains(_currentUserService.UserId)))
+        var table = await _context.Tables
+            .Where(t => t.Id == request.Id && (t.OwnerId == _currentUserService.UserId || t.UsersWithAccess.Contains(_currentUserService.UserId)))
             .Include(t => t.Columns.OrderBy(c => c.Order))
             .ThenInclude(c => c.Items.OrderBy(c => c.Order))
             .FirstOrDefaultAsync(cancellationToken);
 
-        return _mapper.Map<TableDto?>(tables);
+        if (table is null)
+        {
+            throw new NotFoundException(nameof(Table), request.Id);
+        }
+
+        return _mapper.Map<TableDto>(table);
     }
 }
