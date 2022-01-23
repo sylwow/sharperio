@@ -1,0 +1,50 @@
+.container {
+  padding: 2rem 0;
+}
+
+.headder {
+  padding: 1rem;
+}
+
+.tables-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.table-info {
+  &,
+  &:link,
+  &:visited {
+    text-decoration: none;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    flex: 0 0 10rem;
+    height: 5rem;
+    background-color: orangered;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s;
+  }
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2);
+  }
+
+  &:active,
+  &:focus {
+    outline: none;
+    transform: scale(1.05);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
+  }
+}
+
+.private-icon {
+  align-self: flex-end;
+}

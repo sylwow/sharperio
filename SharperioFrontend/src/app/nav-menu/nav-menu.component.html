@@ -1,0 +1,25 @@
+<header>
+  <nav>
+    <mat-toolbar color="primary" class="nav-toolbar">
+      <h1>
+          <a class="table-info" [routerLink]="['/']">
+          Sharperio
+        </a>
+      </h1>
+      <button class="action" mat-button aria-label="Workspaces">
+        Workspaces
+      </button>
+      <button class="action" mat-button aria-label="Recent">
+        Recent
+      </button>
+      <button class="action" mat-button aria-label="Create">
+        Create
+      </button>
+      <span class="menu-spacer"></span>
+      <button class="action" mat-icon-button aria-label="Example icon button with a menu icon">
+        <mat-icon>notifications</mat-icon>
+      </button>
+      <app-login-menu class="action"></app-login-menu>
+    </mat-toolbar>
+  </nav>
+</header>

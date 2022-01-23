@@ -1,0 +1,73 @@
+.controls {
+  display: flex;
+  flex-direction: row;
+  gap: 0.2rem;
+}
+
+.board {
+  padding: 1rem;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 1rem;
+}
+
+.column {
+  display: flex;
+  align-self: start;
+  flex: 0 0 18rem;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  border-radius: 0.3rem;
+  background-color: #ebecf0;
+
+  &-drag {
+    padding: 0.8rem 0.6rem;
+    cursor: grab;
+  }
+
+  &-items {
+    padding: 0.8rem 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    flex-wrap: nowrap;
+  }
+
+  &-title {
+    display: inline-block;
+    align-self: flex-start;
+    font-weight: 500 !important;
+    cursor: pointer;
+
+    &-edit {
+      font-size: 1rem;
+    }
+  }
+}
+
+.item {
+  position: relative;
+  border-radius: 0.3rem;
+  background-color: #ffffff;
+  padding: 0.6rem 0.4rem;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: #dadada;
+    cursor: pointer;
+  }
+
+  &-edit {
+    position: absolute;
+    visibility: hidden;
+    top: 0;
+    right: 0;
+    font-size: 0.3rem !important;
+  }
+
+  &:hover &-edit,
+  .force-visible {
+    visibility: visible;
+  }
+}

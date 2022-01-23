@@ -1,0 +1,89 @@
+<div class="container">
+  <header class="controls">
+    <button mat-button>{{ table?.title }}</button>
+    <button mat-button>Workspace</button>
+    <button mat-button>Private</button>
+    <button mat-button>Invite</button>
+  </header>
+  <main class="board" *ngIf="table">
+    <span class="column" *ngFor="let column of table.columns">
+      <div class="column-drag">
+        <h3
+          class="column-title"
+          *ngIf="columnEdition !== column"
+          (click)="columnEdition = column"
+        >
+          {{ column.title }}
+        </h3>
+        <textarea
+          #textArea
+          autofocus
+          [hidden]="columnEdition !== column"
+          class="column-title-edit"
+          (blur)="editColumn(column, textArea.value)"
+          (keyup.enter)="editColumn(column, textArea.value)"
+          >{{ column.title }}</textarea
+        >
+      </div>
+      <div class="column-items">
+        <span class="item" *ngFor="let item of column.items">
+          <button
+            class="item-edit"
+            (click)="itemEdition = item"
+            [matMenuTriggerFor]="menu"
+            mat-icon-button
+            aria-label="Edit item"
+            [class.force-visible]="itemEdition === item"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="deleteItem(column, item)">
+              <mat-icon>delete</mat-icon>
+              <span>Delete</span>
+            </button>
+          </mat-menu>
+
+          <span class="item-title">{{ item.title }}</span>
+        </span>
+
+        <button
+          class="item-add"
+          *ngIf="addItem === null"
+          (click)="addItem = column"
+          mat-icon-button
+          aria-label="Add item"
+        >
+          <mat-icon>add</mat-icon>
+        </button>
+        <textarea
+          #addItemTextArea
+          autofocus
+          *ngIf="addItem === column"
+          (blur)="createItem(column, addItemTextArea.value)"
+          (keyup.enter)="createItem(column, addItemTextArea.value)"
+        ></textarea>
+      </div>
+    </span>
+
+    <span class="column">
+      <button
+        *ngIf="addColumn === null"
+        (click)="addColumn = table"
+        mat-icon-button
+        aria-label="Add item"
+      >
+        <mat-icon>add</mat-icon>
+        <span>Add column</span>
+      </button>
+      <textarea
+        #addColumnTextArea
+        autofocus
+        *ngIf="addColumn === table"
+        (blur)="createColumn(table, addColumnTextArea.value)"
+        (keyup.enter)="createColumn(table, addColumnTextArea.value)"
+      ></textarea>
+    </span>
+  </main>
+</div>

@@ -1,0 +1,22 @@
+<ng-container *ngIf="isAuthenticated$ | async; else notAuthenticated">
+    <button mat-icon-button aria-label="Account menu" [matMenuTriggerFor]="menu">
+        <mat-icon>person</mat-icon>
+    </button>
+</ng-container>
+<ng-template #notAuthenticated>
+    <button mat-button aria-label="Register" (click)="login()">
+        Register
+    </button>
+    <button mat-button aria-label="Login" (click)="login()">
+        Login
+    </button>
+</ng-template>
+
+<mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Logout</span>
+    </button>
+</mat-menu>
+  
+  
