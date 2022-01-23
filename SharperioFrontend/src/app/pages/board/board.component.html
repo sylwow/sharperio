@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" *ngIf="table$ | async as table">
   <header class="controls">
     <button mat-button>{{ table?.title }}</button>
     <button mat-button>Workspace</button>
@@ -20,8 +20,8 @@
           autofocus
           [hidden]="columnEdition !== column"
           class="column-title-edit"
-          (blur)="editColumn(column, textArea.value)"
-          (keyup.enter)="editColumn(column, textArea.value)"
+          (blur)="changeColumnTitle(column, textArea.value)"
+          (keyup.enter)="changeColumnTitle(column, textArea.value)"
           >{{ column.title }}</textarea
         >
       </div>
@@ -39,7 +39,7 @@
           </button>
 
           <mat-menu #menu="matMenu">
-            <button mat-menu-item (click)="deleteItem(column, item)">
+            <button mat-menu-item (click)="arhieveItem(column, item)">
               <mat-icon>delete</mat-icon>
               <span>Delete</span>
             </button>

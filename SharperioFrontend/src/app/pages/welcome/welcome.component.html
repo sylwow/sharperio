@@ -1,0 +1,21 @@
+<div class="container">
+  <header class="headder">Your Tables</header>
+  <main class="tables-container">
+    <a
+      class="table-info"
+      [routerLink]="['/', paths.board, table.id]"
+      *ngFor="let table of allTables$ | async"
+    >
+      <span>
+        {{ table.title }}
+      </span>
+      <mat-icon
+        class="private-icon"
+        *ngIf="table.isPrivate"
+        aria-hidden="false"
+        aria-label="Table is private"
+        >lock</mat-icon
+      >
+    </a>
+  </main>
+</div>

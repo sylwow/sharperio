@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Paths } from '../constants/paths';
-import { TableClient, TableDto } from '../generated/web-api-client';
+import { Paths } from 'src/app/constants/paths';
+import { TableClient, TableDto } from 'src/app/generated/web-api-client';
 
 @Component({
   selector: 'app-welcome',
@@ -11,15 +11,13 @@ import { TableClient, TableDto } from '../generated/web-api-client';
 export class WelcomeComponent implements OnInit {
   paths = Paths
 
-  allTables: TableDto[] | undefined;
+  allTables$ = this.tableClient.getList()
+    .pipe();
 
   constructor(
     private tableClient: TableClient,
     private router: Router) { }
 
   ngOnInit(): void {
-    this.tableClient.getList().subscribe({
-      next: tables => this.allTables = tables,
-    });
   }
 }

@@ -61,6 +61,7 @@ export class AuthorizeService {
     this.oauthService.setupAutomaticSilentRefresh();
     // this.oauthService.tokenValidationHandler = new JwksValidationHandler();
     this.oauthService.loadDiscoveryDocumentAndTryLogin();
+    this.oauthService.setStorage(localStorage);
 
     window.addEventListener('storage', (event) => {
       // The `key` is `null` if the event was caused by `.clear()`
