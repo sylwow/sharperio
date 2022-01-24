@@ -2,12 +2,22 @@
   <header class="controls">
     <button mat-button>{{ table?.title }}</button>
     <button mat-button>Workspace</button>
-    <button mat-button>Private</button>
+    <mat-slide-toggle [checked]="table?.isPrivate">
+      {{ table?.isPrivate ? "Private" : "Public" }}
+    </mat-slide-toggle>
     <button mat-button>Invite</button>
   </header>
-  <main class="board" *ngIf="table">
-    <span class="column" *ngFor="let column of table.columns">
-      <div class="column-drag">
+
+  <main
+    class="board"
+    *ngIf="table"
+    cdkDropList
+    [cdkDropListData]="table.columns"
+    cdkDropListOrientation="horizontal"
+    (cdkDropListDropped)="drop($event)"
+  >
+    <span class="column" *ngFor="let column of table.columns" cdkDrag>
+      <div class="column-drag" cdkDragHandle>
         <h3
           class="column-title"
           *ngIf="columnEdition !== column"
@@ -17,40 +27,88 @@
         </h3>
         <textarea
           #textArea
-          autofocus
-          [hidden]="columnEdition !== column"
+          appFocusOnShow
+          *ngIf="columnEdition === column"
           class="column-title-edit"
           (blur)="changeColumnTitle(column, textArea.value)"
+          (keyup.escape)="columnEdition = null"
           (keyup.enter)="changeColumnTitle(column, textArea.value)"
           >{{ column.title }}</textarea
         >
+
+        <button
+          #editColumnMenuTrigger="matMenuTrigger"
+          class="column-drag-edit"
+          [matMenuTriggerFor]="editColumnMenu"
+          mat-icon-button
+          aria-label="Edit column"
+          [class.force-visible]="editColumnMenuTrigger.menuOpen"
+        >
+          <mat-icon>more_horiz</mat-icon>
+        </button>
+
+        <mat-menu #editColumnMenu="matMenu">
+          <button mat-menu-item>
+            <mat-icon>edit</mat-icon>
+            <span>Edit name</span>
+          </button>
+          <button mat-menu-item (click)="arhieveColumn(table, column)">
+            <mat-icon>archive</mat-icon>
+            <span>Archive</span>
+          </button>
+        </mat-menu>
       </div>
-      <div class="column-items">
-        <span class="item" *ngFor="let item of column.items">
+      <div
+        class="column-items"
+        cdkDropList
+        [cdkDropListData]="column.items"
+        id="{{ column.id }}"
+        [cdkDropListConnectedTo]="(columnIds$ | async) || []"
+        (cdkDropListDropped)="drop($event)"
+      >
+        <div class="item" *ngFor="let item of column.items" cdkDrag>
           <button
+            #editItemMenuTrigger="matMenuTrigger"
             class="item-edit"
-            (click)="itemEdition = item"
             [matMenuTriggerFor]="menu"
             mat-icon-button
             aria-label="Edit item"
-            [class.force-visible]="itemEdition === item"
+            [class.force-visible]="editItemMenuTrigger.menuOpen"
           >
-            <mat-icon>edit</mat-icon>
+            <mat-icon>more_vert</mat-icon>
           </button>
 
           <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="delayedEditItemTitle(item)">
+              <mat-icon>edit</mat-icon>
+              <span>Edit name</span>
+            </button>
             <button mat-menu-item (click)="arhieveItem(column, item)">
-              <mat-icon>delete</mat-icon>
-              <span>Delete</span>
+              <mat-icon>archive</mat-icon>
+              <span>Archive</span>
             </button>
           </mat-menu>
 
-          <span class="item-title">{{ item.title }}</span>
-        </span>
+          <span>
+            <span class="item-title" *ngIf="itemEdition !== item">
+              {{ item.title }}
+            </span>
+            <textarea
+              #itemTitleEdit
+              appFocusOnShow
+              *ngIf="itemEdition === item"
+              class="column-title-edit"
+              (blur)="changeItemTitle(item, itemTitleEdit.value)"
+              (keyup.escape)="itemEdition = null"
+              (keyup.enter)="changeItemTitle(item, itemTitleEdit.value)"
+              >{{ item.title }}</textarea
+            >
+          </span>
+        </div>
 
         <button
           class="item-add"
-          *ngIf="addItem === null"
+          *ngIf="addItem === null || addItem != column"
           (click)="addItem = column"
           mat-icon-button
           aria-label="Add item"
@@ -59,9 +117,10 @@
         </button>
         <textarea
           #addItemTextArea
-          autofocus
+          appFocusOnShow
           *ngIf="addItem === column"
           (blur)="createItem(column, addItemTextArea.value)"
+          (keyup.escape)="addItem = null"
           (keyup.enter)="createItem(column, addItemTextArea.value)"
         ></textarea>
       </div>
@@ -79,9 +138,10 @@
       </button>
       <textarea
         #addColumnTextArea
-        autofocus
+        appFocusOnShow
         *ngIf="addColumn === table"
         (blur)="createColumn(table, addColumnTextArea.value)"
+        (keyup.escape)="addColumn = null"
         (keyup.enter)="createColumn(table, addColumnTextArea.value)"
       ></textarea>
     </span>

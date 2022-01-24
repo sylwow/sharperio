@@ -1,7 +1,8 @@
+import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { map, shareReplay, switchMap } from 'rxjs/operators';
 import { ColumnClient, ColumnDto2, CreateColumnCommand, CreateItemCommand, ItemClient, ItemDto2, ItemDto3, IUpdateColumnCommand, IUpdateItemCommand, TableClient, TableDto2, UpdateColumnCommand, UpdateItemCommand } from '../../generated/web-api-client';
 
 @Component({
@@ -12,7 +13,14 @@ import { ColumnClient, ColumnDto2, CreateColumnCommand, CreateItemCommand, ItemC
 export class BoardComponent implements OnInit {
   table$ = this.route.paramMap.pipe(
     map(params => params.get('id') ?? ''),
-    switchMap(id => this.tableClient.get(id))
+    switchMap(id => this.tableClient.get(id)),
+    shareReplay()
+  );
+
+  columnIds$: Observable<string[]> = this.table$.pipe(
+    map(table => table?.columns?.map(c => c.id?.toString() ?? '')),
+    map(ids => ids ?? []),
+    shareReplay()
   );
 
   addColumn: TableDto2 | null = null;
@@ -33,14 +41,15 @@ export class BoardComponent implements OnInit {
 
   createColumn(table: TableDto2, title: string) {
     this.addColumn = null;
-    if (table.columns === undefined) {
+    const trimmed = title.trim();
+    if (table.columns === undefined || !trimmed) {
       return;
     }
-    const temporatyColumn = new ColumnDto2({ title });
+    const temporatyColumn = new ColumnDto2({ title: trimmed });
     table.columns.push(temporatyColumn);
     this.columnClient.create(new CreateColumnCommand({
       tableId: table.id,
-      title: title.trim()
+      title: trimmed
     })).pipe(
       switchMap(id => this.columnClient.get(id))
     ).subscribe(item => {
@@ -54,12 +63,12 @@ export class BoardComponent implements OnInit {
   changeColumnTitle(column: ColumnDto2, title: string) {
     this.columnEdition = null;
     const trimmed = title?.trim();
-    if (column.title === trimmed) {
+    if (column.title === trimmed || !trimmed) {
       return;
     }
     const oldTitle = column.title;
     column.title = trimmed
-    this.editColumn({ id: column.id, title })
+    this.editColumn({ id: column.id, title: trimmed })
       .subscribe({ error: _ => column.title = oldTitle });
   }
 
@@ -104,14 +113,15 @@ export class BoardComponent implements OnInit {
 
   createItem(column: ColumnDto2, title: string, note: string | null = null) {
     this.addItem = null;
-    if (column.items === undefined) {
+    const trimmed = title?.trim();
+    if (column.items === undefined || !trimmed) {
       return;
     }
-    const temporatyItem = new ItemDto2({ title });
+    const temporatyItem = new ItemDto2({ title: trimmed });
     column.items.push(temporatyItem);
     this.itemClient.create(new CreateItemCommand({
       columnId: column.id,
-      title: title.trim(),
+      title: trimmed,
       note: note?.trim() ?? ''
     })).pipe(
       switchMap(id => this.itemClient.get(id))
@@ -126,18 +136,18 @@ export class BoardComponent implements OnInit {
   changeItemTitle(item: ItemDto3, title: string) {
     this.itemEdition = null;
     const trimmed = title?.trim();
-    if (item.title === trimmed) {
+    if (item.title === trimmed || !trimmed) {
       return;
     }
     const oldTitle = item.title;
     item.title = trimmed
-    this.editItem({ id: item.id, title })
+    this.editItem({ id: item.id, title: trimmed })
       .subscribe({ error: _ => item.title = oldTitle });
   }
 
   changeItemNote(item: ItemDto3, note: string) {
     const trimmed = note?.trim();
-    if (item.note === trimmed) {
+    if (item.note === trimmed || !trimmed) {
       return;
     }
     const oldNote = item.note;
@@ -167,7 +177,7 @@ export class BoardComponent implements OnInit {
     const index = column.items.indexOf(item);
     if (index > -1) {
       column.items.splice(index, 1);
-      this.editColumn({ id: item.id, isArhived: true })
+      this.editItem({ id: item.id, isArhived: true })
         .subscribe({ error: _ => column.items?.splice(index, 0, column) });
     }
   }
@@ -179,7 +189,7 @@ export class BoardComponent implements OnInit {
     const index = column.items.indexOf(column);
     if (index > -1) {
       column.items.splice(index, 1);
-      this.columnClient.delete(<number>item.id)
+      this.itemClient.delete(<number>item.id)
         .subscribe({ error: _ => column.items?.splice(index, 0, column) });
     }
   }
@@ -190,5 +200,22 @@ export class BoardComponent implements OnInit {
 
   private editItem(updateModel: IUpdateItemCommand): Observable<any> {
     return this.itemClient.update(<number>updateModel.id, new UpdateItemCommand(updateModel));
+  }
+
+  delayedEditItemTitle(item: ItemDto2) {
+    setTimeout(() => this.itemEdition = item, 300);
+  }
+
+  drop(event: CdkDragDrop<ItemDto2[]> | any) {
+    if (event.previousContainer === event.container) {
+      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+    } else {
+      transferArrayItem(
+        event.previousContainer.data,
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex,
+      );
+    }
   }
 }

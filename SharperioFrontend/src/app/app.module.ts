@@ -19,7 +19,10 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { API_BASE_URL } from './generated/web-api-client';
 import { BoardComponent } from './pages/board/board.component';
 import { HomeComponent } from './pages/home/home.component';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { WelcomeComponent } from './pages/welcome/welcome.component';
+import { FocusOnShowDirective } from './directives/focus-on-show.directive';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 @NgModule({
   declarations: [
@@ -28,7 +31,8 @@ import { WelcomeComponent } from './pages/welcome/welcome.component';
     HomeComponent,
     LoginMenuComponent,
     WelcomeComponent,
-    BoardComponent
+    BoardComponent,
+    FocusOnShowDirective
   ],
   imports: [
     BrowserModule,
@@ -42,7 +46,9 @@ import { WelcomeComponent } from './pages/welcome/welcome.component';
     MatIconModule,
     MatButtonModule,
     MatMenuModule,
-    RouterModule
+    RouterModule,
+    MatSlideToggleModule,
+    DragDropModule
   ],
   providers: [
     { provide: API_BASE_URL, useValue: environment.apiRoot },
