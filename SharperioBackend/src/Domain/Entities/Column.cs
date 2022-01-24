@@ -6,6 +6,6 @@ public class Column : AuditableEntity
     public string Title { get; set; }
     public bool IsArhived { get; set; } = false;
     public int Order { get; set; }
-    public List<Item> Items { get; set; } = new();
     public Table Table { get; set; }
+    public List<Item> Items { get; set; } = new();
 }
