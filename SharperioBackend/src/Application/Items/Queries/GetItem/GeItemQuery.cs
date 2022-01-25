@@ -29,7 +29,8 @@ public class GetItemQueryHandler : IRequestHandler<GetItemQuery, ItemDto>
     {
         var item = await _context.Items
             .Where(i => i.Id == request.Id &&
-            (i.Column.Table.OwnerId == _currentUserService.UserId || i.Column.Table.UsersWithAccess.Contains(_currentUserService.UserId)))
+                (i.Column.Table.OwnerId == _currentUserService.UserId ||
+                i.Column.Table.Accesses.Any(a => a.UserId == _currentUserService.UserId)))
             .FirstOrDefaultAsync(cancellationToken);
 
         if (item is null)

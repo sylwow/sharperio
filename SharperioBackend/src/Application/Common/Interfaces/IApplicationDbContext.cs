@@ -7,6 +7,8 @@ public interface IApplicationDbContext
 {
     DbSet<TodoList> TodoLists { get; }
     DbSet<TodoItem> TodoItems { get; }
+    DbSet<Access> Accesses { get; }
+    DbSet<Workspace> Workspaces { get; }
     DbSet<Table> Tables { get; }
     DbSet<Column> Columns { get; }
     DbSet<Item> Items { get; }

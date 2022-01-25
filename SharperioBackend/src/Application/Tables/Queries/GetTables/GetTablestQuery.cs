@@ -27,7 +27,7 @@ public class GetTablesQueryHandler : IRequestHandler<GetTablesQuery, TablesDto>
     public async Task<TablesDto> Handle(GetTablesQuery request, CancellationToken cancellationToken)
     {
         var tables =  await _context.Tables
-            .Where(u => u.OwnerId == _currentUserService.UserId || u.UsersWithAccess.Contains(_currentUserService.UserId))
+            .Where(t => t.OwnerId == _currentUserService.UserId || t.Accesses.Any(a => a.UserId == _currentUserService.UserId))
             .ToListAsync(cancellationToken);
 
         if (tables is null)

@@ -2305,6 +2305,7 @@ export interface IItemDto3 {
 
 export class CreateTableCommand implements ICreateTableCommand {
     title?: string;
+    workspaceId?: string | undefined;
 
     constructor(data?: ICreateTableCommand) {
         if (data) {
@@ -2318,6 +2319,7 @@ export class CreateTableCommand implements ICreateTableCommand {
     init(_data?: any) {
         if (_data) {
             this.title = _data["title"];
+            this.workspaceId = _data["workspaceId"];
         }
     }
 
@@ -2331,12 +2333,14 @@ export class CreateTableCommand implements ICreateTableCommand {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["title"] = this.title;
+        data["workspaceId"] = this.workspaceId;
         return data; 
     }
 }
 
 export interface ICreateTableCommand {
     title?: string;
+    workspaceId?: string | undefined;
 }
 
 export class UpdateTableCommand implements IUpdateTableCommand {

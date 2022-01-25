@@ -26,7 +26,9 @@ public class CreateColumnCommandHandler : IRequestHandler<CreateColumnCommand, i
     public async Task<int> Handle(CreateColumnCommand request, CancellationToken cancellationToken)
     {
         var table = _context.Tables
-            .Where(t => t.Id == request.TableId && (t.OwnerId == _currentUserService.UserId || t.UsersWithAccess.Contains(_currentUserService.UserId)))
+            .Where(t => t.Id == request.TableId &&
+                (t.OwnerId == _currentUserService.UserId ||
+                t.Accesses.Any(a => a.UserId == _currentUserService.UserId)))
             .Include(t => t.Columns)
             .FirstOrDefault();
 

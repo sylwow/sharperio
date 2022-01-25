@@ -28,7 +28,9 @@ public class GetTableQueryHandler : IRequestHandler<GetTableQuery, TableDto>
     public async Task<TableDto> Handle(GetTableQuery request, CancellationToken cancellationToken)
     {
         var table = await _context.Tables
-            .Where(t => t.Id == request.Id && (t.OwnerId == _currentUserService.UserId || t.UsersWithAccess.Contains(_currentUserService.UserId)))
+            .Where(t => t.Id == request.Id && 
+                (t.OwnerId == _currentUserService.UserId ||
+                t.Accesses.Any(a => a.UserId == _currentUserService.UserId)))
             .Include(t => t.Columns.Where(c => !c.IsArhived).OrderBy(c => c.Order))
             .ThenInclude(c => c.Items.Where(c => !c.IsArhived).OrderBy(c => c.Order))
             .FirstOrDefaultAsync(cancellationToken);

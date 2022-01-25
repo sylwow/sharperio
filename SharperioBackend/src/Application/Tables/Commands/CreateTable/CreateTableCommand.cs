@@ -9,6 +9,7 @@ namespace SharperioBackend.Application.Tables.Commands.CreateTable;
 public class CreateTableCommand : IRequest<Guid>
 {
     public string Title { get; set; }
+    public Guid? WorkspaceId { get; set; }
 }
 
 public class CreateTableCommandHandler : IRequestHandler<CreateTableCommand, Guid>
@@ -24,14 +25,24 @@ public class CreateTableCommandHandler : IRequestHandler<CreateTableCommand, Gui
 
     public async Task<Guid> Handle(CreateTableCommand request, CancellationToken cancellationToken)
     {
+        var workspace = await _context.Accesses
+            .Where(a => a.UserId == _currentUserService.UserId)
+            .SelectMany(a => a.Workspaces
+                .Where(w => request.WorkspaceId != null ? w.Id == request.WorkspaceId : w.IsDefault))
+            .FirstOrDefaultAsync();
+
+        if (workspace is null)
+        {
+            throw new NotFoundException(nameof(Workspace), request.WorkspaceId);
+        }
+
         var entity = new Table
         {
             OwnerId = _currentUserService.UserId,
             Title = request.Title,
-            UsersWithAccess = { _currentUserService.UserId }
         };
 
-        _context.Tables.Add(entity);
+        workspace.Tables.Add(entity);
 
         await _context.SaveChangesAsync(cancellationToken);
 

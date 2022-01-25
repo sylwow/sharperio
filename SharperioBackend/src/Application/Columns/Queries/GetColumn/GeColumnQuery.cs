@@ -28,7 +28,9 @@ public class GetColumnQueryHandler : IRequestHandler<GetColumnQuery, ColumnDto>
     public async Task<ColumnDto> Handle(GetColumnQuery request, CancellationToken cancellationToken)
     {
         var column = await _context.Columns
-            .Where(c => c.Id == request.Id && (c.Table.OwnerId == _currentUserService.UserId || c.Table.UsersWithAccess.Contains(_currentUserService.UserId)))
+            .Where(c => c.Id == request.Id && 
+                (c.Table.OwnerId == _currentUserService.UserId ||
+                c.Table.Accesses.Any(a => a.UserId == _currentUserService.UserId)))
             .OrderBy(c => c.Order)
             .Include(c => c.Items.Where(i => !i.IsArhived).OrderBy(c => c.Order))
             .FirstOrDefaultAsync(cancellationToken);
