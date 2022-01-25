@@ -2,6 +2,7 @@
 using SharperioBackend.Application.Common.Interfaces;
 using SharperioBackend.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace SharperioBackend.Application.Columns.Commands.UpdateColumn;
 
@@ -16,16 +17,21 @@ public class UpdateColumnCommand : IRequest
 public class UpdateColumnCommandHandler : IRequestHandler<UpdateColumnCommand>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public UpdateColumnCommandHandler(IApplicationDbContext context)
+    public UpdateColumnCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Unit> Handle(UpdateColumnCommand request, CancellationToken cancellationToken)
     {
         var entity = await _context.Columns
-            .FindAsync(new object[] { request.Id }, cancellationToken);
+            .Where(c => c.Id == request.Id &&
+                (c.Table.OwnerId == _currentUserService.UserId ||
+                c.Table.Accesses.Any(a => a.UserId == _currentUserService.UserId)))
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (entity == null)
         {

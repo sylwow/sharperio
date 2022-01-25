@@ -14,16 +14,20 @@ public class DeleteItemCommand : IRequest
 public class DeleteItemCommandHandler : IRequestHandler<DeleteItemCommand>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public DeleteItemCommandHandler(IApplicationDbContext context)
+    public DeleteItemCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Unit> Handle(DeleteItemCommand request, CancellationToken cancellationToken)
     {
         var entity = await _context.Items
-            .Where(t => t.Id == request.Id)
+            .Where(i => i.Id == request.Id &&
+                (i.Column.Table.OwnerId == _currentUserService.UserId ||
+                i.Column.Table.Accesses.Any(a => a.UserId == _currentUserService.UserId)))
             .SingleOrDefaultAsync(cancellationToken);
 
         if (entity == null)

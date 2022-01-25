@@ -14,17 +14,21 @@ public class DeleteTableCommand : IRequest
 public class DeleteTableCommandHandler : IRequestHandler<DeleteTableCommand>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public DeleteTableCommandHandler(IApplicationDbContext context)
+    public DeleteTableCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Unit> Handle(DeleteTableCommand request, CancellationToken cancellationToken)
     {
         var entity = await _context.Tables
-            .Where(t => t.Id == request.Id)
-            .SingleOrDefaultAsync(cancellationToken);
+            .Where(t => t.Id == request.Id &&
+                (t.OwnerId == _currentUserService.UserId ||
+                t.Accesses.Any(a => a.UserId == _currentUserService.UserId)))
+            .FirstOrDefaultAsync();
 
         if (entity == null)
         {

@@ -2,6 +2,7 @@
 using SharperioBackend.Application.Common.Interfaces;
 using SharperioBackend.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace SharperioBackend.Application.Columns.Commands.UpdateItem;
 
@@ -28,7 +29,10 @@ public class UpdateItemCommandHandler : IRequestHandler<UpdateItemCommand>
     public async Task<Unit> Handle(UpdateItemCommand request, CancellationToken cancellationToken)
     {
         var entity = await _context.Items
-                    .FindAsync(new object[] { request.Id }, cancellationToken);
+            .Where(i => i.Id == request.Id &&
+                (i.Column.Table.OwnerId == _currentUserService.UserId ||
+                i.Column.Table.Accesses.Any(a => a.UserId == _currentUserService.UserId)))
+            .FirstOrDefaultAsync();
 
         if (entity == null)
         {

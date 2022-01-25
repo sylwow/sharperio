@@ -14,16 +14,20 @@ public class DeleteColumnCommand : IRequest
 public class DeleteColumnCommandHandler : IRequestHandler<DeleteColumnCommand>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public DeleteColumnCommandHandler(IApplicationDbContext context)
+    public DeleteColumnCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Unit> Handle(DeleteColumnCommand request, CancellationToken cancellationToken)
     {
         var entity = await _context.Columns
-            .Where(t => t.Id == request.Id)
+            .Where(c => c.Id == request.Id &&
+                (c.Table.OwnerId == _currentUserService.UserId ||
+                c.Table.Accesses.Any(a => a.UserId == _currentUserService.UserId)))
             .SingleOrDefaultAsync(cancellationToken);
 
         if (entity == null)

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -145,6 +144,24 @@ namespace SharperioBackend.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Workspace",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    IsDefault = table.Column<bool>(type: "boolean", nullable: false),
+                    Created = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    LastModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    LastModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    OwnerId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Workspace", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -251,32 +268,6 @@ namespace SharperioBackend.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Tables",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    OwnerId = table.Column<string>(type: "text", nullable: false),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    CoverId = table.Column<int>(type: "integer", nullable: true),
-                    IsPrivate = table.Column<bool>(type: "boolean", nullable: false),
-                    IsArhived = table.Column<bool>(type: "boolean", nullable: false),
-                    UsersWithAccess = table.Column<List<string>>(type: "text[]", nullable: false),
-                    Created = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    CreatedBy = table.Column<string>(type: "text", nullable: true),
-                    LastModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LastModifiedBy = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Tables", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Tables_Covers_CoverId",
-                        column: x => x.CoverId,
-                        principalTable: "Covers",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "TodoItems",
                 columns: table => new
                 {
@@ -300,6 +291,80 @@ namespace SharperioBackend.Infrastructure.Persistence.Migrations
                         name: "FK_TodoItems_TodoLists_ListId",
                         column: x => x.ListId,
                         principalTable: "TodoLists",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Accesses",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    WorkspaceId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Accesses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Accesses_Workspace_WorkspaceId",
+                        column: x => x.WorkspaceId,
+                        principalTable: "Workspace",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tables",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    CoverId = table.Column<int>(type: "integer", nullable: true),
+                    IsPrivate = table.Column<bool>(type: "boolean", nullable: false),
+                    IsArhived = table.Column<bool>(type: "boolean", nullable: false),
+                    WorkspaceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Created = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    LastModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    LastModifiedBy = table.Column<string>(type: "text", nullable: true),
+                    OwnerId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tables", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Tables_Covers_CoverId",
+                        column: x => x.CoverId,
+                        principalTable: "Covers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Tables_Workspace_WorkspaceId",
+                        column: x => x.WorkspaceId,
+                        principalTable: "Workspace",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AccessTable",
+                columns: table => new
+                {
+                    AccessesId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TablesId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AccessTable", x => new { x.AccessesId, x.TablesId });
+                    table.ForeignKey(
+                        name: "FK_AccessTable_Accesses_AccessesId",
+                        column: x => x.AccessesId,
+                        principalTable: "Accesses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AccessTable_Tables_TablesId",
+                        column: x => x.TablesId,
+                        principalTable: "Tables",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -411,6 +476,16 @@ namespace SharperioBackend.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Accesses_WorkspaceId",
+                table: "Accesses",
+                column: "WorkspaceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AccessTable_TablesId",
+                table: "AccessTable",
+                column: "TablesId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
                 column: "RoleId");
@@ -514,6 +589,11 @@ namespace SharperioBackend.Infrastructure.Persistence.Migrations
                 column: "CoverId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Tables_WorkspaceId",
+                table: "Tables",
+                column: "WorkspaceId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TodoItems_ListId",
                 table: "TodoItems",
                 column: "ListId");
@@ -521,6 +601,9 @@ namespace SharperioBackend.Infrastructure.Persistence.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AccessTable");
+
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -555,6 +638,9 @@ namespace SharperioBackend.Infrastructure.Persistence.Migrations
                 name: "TodoItems");
 
             migrationBuilder.DropTable(
+                name: "Accesses");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
@@ -574,6 +660,9 @@ namespace SharperioBackend.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "Covers");
+
+            migrationBuilder.DropTable(
+                name: "Workspace");
         }
     }
 }

@@ -14,7 +14,7 @@
     cdkDropList
     [cdkDropListData]="table.columns"
     cdkDropListOrientation="horizontal"
-    (cdkDropListDropped)="drop($event)"
+    (cdkDropListDropped)="dropColumn($event)"
   >
     <span class="column" *ngFor="let column of table.columns" cdkDrag>
       <div class="column-drag" cdkDragHandle>
@@ -61,7 +61,7 @@
       <div
         class="column-items"
         cdkDropList
-        [cdkDropListData]="column.items"
+        [cdkDropListData]="column"
         id="{{ column.id }}"
         [cdkDropListConnectedTo]="(columnIds$ | async) || []"
         (cdkDropListDropped)="drop($event)"

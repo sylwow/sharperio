@@ -299,6 +299,7 @@ export interface IItemClient {
     update(id: number, command: UpdateItemCommand): Observable<FileResponse>;
     delete(id: number): Observable<FileResponse>;
     create(command: CreateItemCommand): Observable<number>;
+    updateOrder(id: number, command: UpdateItemOrderCommand): Observable<FileResponse>;
 }
 
 @Injectable({
@@ -517,6 +518,59 @@ export class ItemClient implements IItemClient {
             }));
         }
         return _observableOf<number>(<any>null);
+    }
+
+    updateOrder(id: number, command: UpdateItemOrderCommand) : Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/Item/{id}/order";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(command);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/octet-stream"
+            })
+        };
+
+        return this.http.request("patch", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdateOrder(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdateOrder(<any>response_);
+                } catch (e) {
+                    return <Observable<FileResponse>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<FileResponse>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processUpdateOrder(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<FileResponse>(<any>null);
     }
 }
 
@@ -1829,7 +1883,7 @@ export interface IUpdateColumnCommand {
 
 export class UpdateColumnOrderCommand implements IUpdateColumnOrderCommand {
     id?: number;
-    order?: number;
+    index?: number;
 
     constructor(data?: IUpdateColumnOrderCommand) {
         if (data) {
@@ -1843,7 +1897,7 @@ export class UpdateColumnOrderCommand implements IUpdateColumnOrderCommand {
     init(_data?: any) {
         if (_data) {
             this.id = _data["id"];
-            this.order = _data["order"];
+            this.index = _data["index"];
         }
     }
 
@@ -1857,14 +1911,14 @@ export class UpdateColumnOrderCommand implements IUpdateColumnOrderCommand {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
-        data["order"] = this.order;
+        data["index"] = this.index;
         return data; 
     }
 }
 
 export interface IUpdateColumnOrderCommand {
     id?: number;
-    order?: number;
+    index?: number;
 }
 
 export class ItemDto2 implements IItemDto2 {
@@ -2033,6 +2087,54 @@ export interface IUpdateItemCommand {
     note?: string | undefined;
     order?: number | undefined;
     isArhived?: boolean | undefined;
+}
+
+export class UpdateItemOrderCommand implements IUpdateItemOrderCommand {
+    id?: number;
+    index?: number;
+    previousColumnId?: number;
+    newColumnId?: number;
+
+    constructor(data?: IUpdateItemOrderCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.index = _data["index"];
+            this.previousColumnId = _data["previousColumnId"];
+            this.newColumnId = _data["newColumnId"];
+        }
+    }
+
+    static fromJS(data: any): UpdateItemOrderCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateItemOrderCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["index"] = this.index;
+        data["previousColumnId"] = this.previousColumnId;
+        data["newColumnId"] = this.newColumnId;
+        return data; 
+    }
+}
+
+export interface IUpdateItemOrderCommand {
+    id?: number;
+    index?: number;
+    previousColumnId?: number;
+    newColumnId?: number;
 }
 
 export class TableDto implements ITableDto {

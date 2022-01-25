@@ -25,15 +25,14 @@ public class CreateTableCommandHandler : IRequestHandler<CreateTableCommand, Gui
 
     public async Task<Guid> Handle(CreateTableCommand request, CancellationToken cancellationToken)
     {
-        var workspace = await _context.Accesses
+        var access = await _context.Accesses
             .Where(a => a.UserId == _currentUserService.UserId)
-            .SelectMany(a => a.Workspaces
-                .Where(w => request.WorkspaceId != null ? w.Id == request.WorkspaceId : w.IsDefault))
             .FirstOrDefaultAsync();
 
-        if (workspace is null)
+        if (access is null)
         {
-            throw new NotFoundException(nameof(Workspace), request.WorkspaceId);
+            access = new Access { UserId = _currentUserService.UserId };
+            _context.Accesses.Add(access);
         }
 
         var entity = new Table
@@ -42,10 +41,9 @@ public class CreateTableCommandHandler : IRequestHandler<CreateTableCommand, Gui
             Title = request.Title,
         };
 
-        workspace.Tables.Add(entity);
+        access.Tables.Add(entity);
 
         await _context.SaveChangesAsync(cancellationToken);
-
         return entity.Id;
     }
 }

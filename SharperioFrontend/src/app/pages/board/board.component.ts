@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, shareReplay, switchMap } from 'rxjs/operators';
-import { ColumnClient, ColumnDto2, CreateColumnCommand, CreateItemCommand, ItemClient, ItemDto2, ItemDto3, IUpdateColumnCommand, IUpdateItemCommand, TableClient, TableDto2, UpdateColumnCommand, UpdateItemCommand } from '../../generated/web-api-client';
+import { ColumnClient, ColumnDto2, CreateColumnCommand, CreateItemCommand, ItemClient, ItemDto2, ItemDto3, IUpdateColumnCommand, IUpdateItemCommand, TableClient, TableDto2, UpdateColumnCommand, UpdateColumnOrderCommand, UpdateItemCommand, UpdateItemOrderCommand } from '../../generated/web-api-client';
 
 @Component({
   selector: 'app-board',
@@ -208,14 +208,53 @@ export class BoardComponent implements OnInit {
 
   drop(event: CdkDragDrop<ItemDto2[]> | any) {
     if (event.previousContainer === event.container) {
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+      this.moveItem(event.container.data, event.previousIndex, event.currentIndex);
     } else {
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex,
-      );
+      this.transferItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
     }
+  }
+
+  dropColumn(event: CdkDragDrop<ItemDto2[]> | any) {
+    this.moveColumn(event.container.data, event.previousIndex, event.currentIndex);
+  }
+
+  private moveColumn(data: ColumnDto2[], previousIndex: number, currentIndex: number) {
+    moveItemInArray(data, previousIndex, currentIndex);
+    const column = data[currentIndex];
+
+    this.columnClient.updateOrder(<number>column.id, new UpdateColumnOrderCommand({
+      id: <number>column.id,
+      index: currentIndex
+    })).subscribe({ error: _ => moveItemInArray(data, currentIndex, previousIndex) });
+  }
+
+  private moveItem(data: ColumnDto2, previousIndex: number, currentIndex: number) {
+    if (!data.items) {
+      return;
+    }
+    moveItemInArray(data.items, previousIndex, currentIndex);
+    const item = data.items[currentIndex];
+
+    this.itemClient.updateOrder(<number>item.id, new UpdateItemOrderCommand({
+      id: <number>item.id,
+      index: currentIndex,
+      newColumnId: data.id,
+      previousColumnId: data.id
+    })).subscribe({ error: _ => moveItemInArray(data.items ?? [], currentIndex, previousIndex) });
+  }
+
+  private transferItem(previous: ColumnDto2, current: ColumnDto2, previousIndex: number, currentIndex: number) {
+    if (!previous.items || !current.items) {
+      return;
+    }
+    transferArrayItem(previous.items, current.items, previousIndex, currentIndex);
+    const item = current.items[currentIndex];
+
+    this.itemClient.updateOrder(<number>item.id, new UpdateItemOrderCommand({
+      id: <number>item.id,
+      index: currentIndex,
+      newColumnId: current.id,
+      previousColumnId: previous.id
+    })).subscribe({ error: _ => transferArrayItem(current.items ?? [], previous.items ?? [], currentIndex, previousIndex) });
   }
 }

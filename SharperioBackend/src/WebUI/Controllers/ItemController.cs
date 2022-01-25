@@ -4,6 +4,7 @@ using SharperioBackend.Application.Items.Commands.DeleteItem;
 using SharperioBackend.Application.Items.Queries.GetItem;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SharperioBackend.Application.Items.Commands.UpdateItemOrder;
 
 namespace SharperioBackend.WebUI.Controllers;
 
@@ -32,6 +33,18 @@ public class ItemController : ApiControllerBase
 
         await Mediator.Send(command);
 
+        return NoContent();
+    }
+
+    [HttpPatch("{id}/order")]
+    public async Task<ActionResult> UpdateOrder(int id, UpdateItemOrderCommand command)
+    {
+        if (id != command.Id)
+        {
+            return BadRequest();
+        }
+
+        await Mediator.Send(command);
         return NoContent();
     }
 
