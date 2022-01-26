@@ -1,4 +1,4 @@
-<div class="container" *ngIf="table$ | async as table">
+<div class="container" *ngIf="table">
   <header class="controls">
     <button mat-button>{{ table?.title }}</button>
     <button mat-button>Workspace</button>
@@ -63,7 +63,7 @@
         cdkDropList
         [cdkDropListData]="column"
         id="{{ column.id }}"
-        [cdkDropListConnectedTo]="(columnIds$ | async) || []"
+        [cdkDropListConnectedTo]="columnIds"
         (cdkDropListDropped)="drop($event)"
       >
         <div class="item" *ngFor="let item of column.items" cdkDrag>

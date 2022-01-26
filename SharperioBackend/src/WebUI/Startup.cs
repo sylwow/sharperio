@@ -8,6 +8,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using NSwag;
 using NSwag.Generation.Processors.Security;
+using SharperioBackend.WebUI.WebHubs;
 
 namespace SharperioBackend.WebUI;
 
@@ -29,6 +30,8 @@ public class Startup
         services.AddDatabaseDeveloperPageExceptionFilter();
 
         services.AddSingleton<ICurrentUserService, CurrentUserService>();
+        services.AddSingleton<IUserNotificationService, UserNotificationService>();
+        services.AddSignalR();
 
         services.AddHttpContextAccessor();
 
@@ -116,7 +119,7 @@ public class Startup
             endpoints.MapControllerRoute(
                 name: "default",
                 pattern: "{controller}/{action=Index}/{id?}");
-            //endpoints.MapRazorPages();
+            endpoints.MapHub<UserNotificationHub>("/notifications");
         });
     }
 }

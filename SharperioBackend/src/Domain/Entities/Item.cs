@@ -2,7 +2,7 @@
 
 namespace SharperioBackend.Domain.Entities;
 
-public class Item : AuditableEntity
+public class Item : AuditableEntity, IHasDomainEvent
 {
     public int Id { get; set; }
     public string Title { get; set; }
@@ -13,4 +13,5 @@ public class Item : AuditableEntity
     public Column Column { get; set; }
     public List<Label> Labels { get; set; } = new();
     public List<Comment> Comments { get; set; } = new();
+    public List<DomainEvent> DomainEvents { get; set; } = new List<DomainEvent>();
 }

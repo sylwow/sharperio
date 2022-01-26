@@ -2,8 +2,23 @@ import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/dr
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
-import { map, shareReplay, switchMap } from 'rxjs/operators';
+import { filter, map, shareReplay, switchMap } from 'rxjs/operators';
+import { NotificationService } from 'src/app/services/notification.service';
 import { ColumnClient, ColumnDto2, CreateColumnCommand, CreateItemCommand, ItemClient, ItemDto2, ItemDto3, IUpdateColumnCommand, IUpdateItemCommand, TableClient, TableDto2, UpdateColumnCommand, UpdateColumnOrderCommand, UpdateItemCommand, UpdateItemOrderCommand } from '../../generated/web-api-client';
+
+interface ColumOrderChanged {
+  tableId: string,
+  columnId: number,
+  newIndex: number
+}
+
+interface ItemOrderChanged {
+  tableId: string,
+  itemId: number,
+  index: number,
+  newColumnId: number,
+  previousColumnId: number,
+}
 
 @Component({
   selector: 'app-board',
@@ -11,17 +26,9 @@ import { ColumnClient, ColumnDto2, CreateColumnCommand, CreateItemCommand, ItemC
   styleUrls: ['./board.component.scss']
 })
 export class BoardComponent implements OnInit {
-  table$ = this.route.paramMap.pipe(
-    map(params => params.get('id') ?? ''),
-    switchMap(id => this.tableClient.get(id)),
-    shareReplay()
-  );
+  table!: TableDto2
 
-  columnIds$: Observable<string[]> = this.table$.pipe(
-    map(table => table?.columns?.map(c => c.id?.toString() ?? '')),
-    map(ids => ids ?? []),
-    shareReplay()
-  );
+  columnIds!: string[];
 
   addColumn: TableDto2 | null = null;
   columnEdition: ColumnDto2 | null = null;
@@ -34,9 +41,56 @@ export class BoardComponent implements OnInit {
     private tableClient: TableClient,
     private columnClient: ColumnClient,
     private itemClient: ItemClient,
+    private notificationService: NotificationService,
   ) { }
 
   ngOnInit(): void {
+    this.route.paramMap.pipe(
+      map(params => params.get('id') ?? ''),
+      switchMap(id => this.tableClient.get(id)),
+    ).subscribe(table => this.setUpData(table));
+  }
+
+  setUpData(table: TableDto2): void {
+    this.table = table
+    this.columnIds = table?.columns?.map(c => c.id?.toString() ?? '') ?? []
+    this.notificationService.connected$.pipe(
+      filter(connected => !!connected)
+    ).subscribe(_ => {
+      this.notificationService.joinGroup(<string>table.id).subscribe();
+
+      this.notificationService.on<ColumOrderChanged>('columnOrderChangedEvent')
+        .subscribe(data => {
+          if (!table.columns) {
+            return;
+          }
+          const previousIndex = table.columns.findIndex(col => col.id == data.columnId);
+          this.moveColumn(table.columns, previousIndex, data.newIndex, true);
+        })
+
+      this.notificationService.on<ItemOrderChanged>('itemOrderChangedEvent')
+        .subscribe(data => {
+          if (!table.columns) {
+            return;
+          }
+          const column = table.columns.find(col => col.id == data.previousColumnId);
+          if (!column) {
+            return;
+          }
+          const previousIndex = column?.items?.findIndex(it => it.id == data.itemId);
+          if (previousIndex == undefined || previousIndex == -1) {
+            return;
+          }
+          if (data.previousColumnId === data.newColumnId) {
+            return this.moveItem(column, previousIndex, data.index, true);
+          }
+          const newColumn = table.columns.find(col => col.id == data.newColumnId);
+          if (!newColumn) {
+            return;
+          }
+          this.transferItem(column, newColumn, previousIndex, data.index, true);
+        })
+    });
   }
 
   createColumn(table: TableDto2, title: string) {
@@ -56,6 +110,7 @@ export class BoardComponent implements OnInit {
       const index = table.columns?.indexOf(temporatyColumn) ?? -1;
       if (index > -1) {
         table.columns?.splice(<number>index, 1, item);
+        this.columnIds.push(item.id?.toString() ?? '');
       }
     });
   }
@@ -218,24 +273,27 @@ export class BoardComponent implements OnInit {
     this.moveColumn(event.container.data, event.previousIndex, event.currentIndex);
   }
 
-  private moveColumn(data: ColumnDto2[], previousIndex: number, currentIndex: number) {
+  private moveColumn(data: ColumnDto2[], previousIndex: number, currentIndex: number, onlyInUI = false) {
+    if (previousIndex === currentIndex) {
+      return;
+    }
     moveItemInArray(data, previousIndex, currentIndex);
     const column = data[currentIndex];
 
-    this.columnClient.updateOrder(<number>column.id, new UpdateColumnOrderCommand({
+    onlyInUI || this.columnClient.updateOrder(<number>column.id, new UpdateColumnOrderCommand({
       id: <number>column.id,
       index: currentIndex
     })).subscribe({ error: _ => moveItemInArray(data, currentIndex, previousIndex) });
   }
 
-  private moveItem(data: ColumnDto2, previousIndex: number, currentIndex: number) {
-    if (!data.items) {
+  private moveItem(data: ColumnDto2, previousIndex: number, currentIndex: number, onlyInUI = false) {
+    if (!data.items || previousIndex === currentIndex) {
       return;
     }
     moveItemInArray(data.items, previousIndex, currentIndex);
     const item = data.items[currentIndex];
 
-    this.itemClient.updateOrder(<number>item.id, new UpdateItemOrderCommand({
+    onlyInUI || this.itemClient.updateOrder(<number>item.id, new UpdateItemOrderCommand({
       id: <number>item.id,
       index: currentIndex,
       newColumnId: data.id,
@@ -243,14 +301,14 @@ export class BoardComponent implements OnInit {
     })).subscribe({ error: _ => moveItemInArray(data.items ?? [], currentIndex, previousIndex) });
   }
 
-  private transferItem(previous: ColumnDto2, current: ColumnDto2, previousIndex: number, currentIndex: number) {
+  private transferItem(previous: ColumnDto2, current: ColumnDto2, previousIndex: number, currentIndex: number, onlyInUI = false) {
     if (!previous.items || !current.items) {
       return;
     }
     transferArrayItem(previous.items, current.items, previousIndex, currentIndex);
     const item = current.items[currentIndex];
 
-    this.itemClient.updateOrder(<number>item.id, new UpdateItemOrderCommand({
+    onlyInUI || this.itemClient.updateOrder(<number>item.id, new UpdateItemOrderCommand({
       id: <number>item.id,
       index: currentIndex,
       newColumnId: current.id,

@@ -2,6 +2,7 @@
 using SharperioBackend.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using SharperioBackend.Domain.Events;
 
 namespace SharperioBackend.Application.Columns.Commands.UpdateColumnOrder;
 
@@ -31,6 +32,7 @@ public class UpdateColumnOrderCommandHandler : IRequestHandler<UpdateColumnOrder
             .SelectMany(c => c.Table.Columns)
             .Where(c => !c.IsArhived)
             .OrderBy(c => c.Order)
+            .Include(c => c.Table)
             .ToList();
 
         if(columns.Count <= 1)
@@ -51,6 +53,13 @@ public class UpdateColumnOrderCommandHandler : IRequestHandler<UpdateColumnOrder
         {
             col.Order = order++;
         }
+
+        column.DomainEvents.Add(new ColumnOrderChangedEvent
+        {
+            ColumnId = request.Id,
+            NewIndex = request.Index,
+            TableId = column.Table.Id,
+        });
 
         await _context.SaveChangesAsync(cancellationToken);
 
